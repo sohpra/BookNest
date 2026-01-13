@@ -214,6 +214,8 @@ window.startScanner = async function startScanner() {
     return;
   }
 
+  document.body.style.position = "fixed";
+
   Quagga.init(
     {
       inputStream: {
@@ -265,18 +267,25 @@ function stopScanner() {
   detectionLocked = false;
   resetDetectionStability();
 
+  // 🔥 RELEASE iOS BODY LOCK
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+
   try {
     if (window.Quagga) Quagga.stop();
   } catch {}
 
   if (mediaStream) {
-    try { mediaStream.getTracks().forEach((t) => t.stop()); } catch {}
+    try { mediaStream.getTracks().forEach(t => t.stop()); } catch {}
     mediaStream = null;
   }
 
   const el = document.getElementById("interactive");
   if (el) el.innerHTML = "";
 }
+
 
 function onDetectedRaw(result) {
   if (detectionLocked) return;
