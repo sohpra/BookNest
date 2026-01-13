@@ -1,27 +1,52 @@
+/* ===================== BOOKNEST (PUBLIC MULTI-USER) ===================== */
+/* Replaces: Google Sheets + fake USERS
+   Adds: Firebase Auth + Firestore per-user library
+   Keeps: Quagga scanner, OpenLibrary/GoogleBooks lookup, category normalisation, UI flow
+*/
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ===================== FIREBASE CONFIG ===================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyB7hH4O_dKpc1tpvG_OpCtwlcJ23wcIT5g",
+  authDomain: "booknest-af892.firebaseapp.com",
+  projectId: "booknest-af892",
+  storageBucket: "booknest-af892.firebasestorage.app",
+  messagingSenderId: "210559796706",
+  appId: "1:210559796706:web:c1e50148e6d9f5286ce5bb"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 /* ===================== CONFIG ===================== */
-/* USERS */
-const USERS = ["sohini", "som", "rehan"];
-
-const params = new URLSearchParams(location.search);
-let CURRENT_USER = (params.get("user") || "").toLowerCase().trim();
-
-// HARD GUARANTEE A USER
-if (!USERS.includes(CURRENT_USER)) CURRENT_USER = (localStorage.getItem("bw_user") || "").toLowerCase().trim();
-if (!USERS.includes(CURRENT_USER)) CURRENT_USER = "sohini";
-
-localStorage.setItem("bw_user", CURRENT_USER);
-
-/* ENDPOINTS */
-const GOOGLE_SHEET_URL =
-  "https://script.google.com/macros/s/AKfycbw1oZV1HEO21oadgp6IKkq9XR4v-2fwuinuKnAr_U1SyFYIrWqcNIpy6gux44pzgBAa_g/exec";
-const Quagga_CDN =
-  "https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js";
+// Quagga
+const Quagga_CDN = "https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js";
 
 // Leave as "" to skip Google Books and use OpenLibrary only.
-const GOOGLE_BOOKS_API_KEY = "YOUR_KEY";
+const GOOGLE_BOOKS_API_KEY = ""; // optional
 
-/* STATE */
-let myLibrary = [];
+/* ===================== STATE ===================== */
+let currentUser = null;          // Firebase user
+let myLibrary = [];              // array of books for current user
 let scannerActive = false;
 let detectionLocked = false;
 let mediaStream = null;
@@ -32,34 +57,94 @@ let lastAcceptTs = 0;
 
 let librarySyncInFlight = false;
 
-/* ===================== HELPERS (READ BY USER) ===================== */
-function emptyReadBy() {
-  return { sohini: false, som: false, rehan: false };
+/* ===================== DOM HELPERS ===================== */
+const $ = (id) => document.getElementById(id);
+function show(el, yes) { if (el) el.style.display = yes ? "" : "none"; }
+
+/* ===================== FIRESTORE PATHS ===================== */
+function libCol() {
+  return collection(db, "users", currentUser.uid, "library");
+}
+function bookRef(bookId) {
+  return doc(db, "users", currentUser.uid, "library", bookId);
 }
 
-function ensureReadBy(book) {
-  if (!book || typeof book !== "object") return emptyReadBy();
-  if (!book.readBy || typeof book.readBy !== "object") book.readBy = emptyReadBy();
-  for (const u of USERS) {
-    if (typeof book.readBy[u] !== "boolean") book.readBy[u] = false;
+/* ===================== AUTH UI ===================== */
+function setAuthUI() {
+  const status = $("authStatus");
+  const logoutBtn = $("logoutBtn");
+  const openAuthBtn = $("openAuthBtn");
+  const loginHint = $("loginHint");
+
+  if (!status || !openAuthBtn || !logoutBtn) return;
+
+  if (currentUser) {
+    status.textContent = `Logged in as ${currentUser.email}`;
+    show(logoutBtn, true);
+    openAuthBtn.textContent = "Account";
+    show(loginHint, false);
+  } else {
+    status.textContent = "Not logged in";
+    show(logoutBtn, false);
+    openAuthBtn.textContent = "Log in";
+    show(loginHint, true);
   }
-  return book.readBy;
 }
 
-function myReadStatus(book) {
-  ensureReadBy(book);
-  return !!book.readBy[CURRENT_USER];
-}
+function bindAuthModal() {
+  const modal = $("auth-modal");
+  const openBtn = $("openAuthBtn");
+  const closeBtn = $("closeAuthBtn");
+  const signupBtn = $("signupBtn");
+  const loginBtn = $("loginBtn");
+  const logoutBtn = $("logoutBtn");
+  const err = $("authError");
 
-function parseYesNo(v) {
-  if (typeof v === "boolean") return v;
-  const s = String(v || "").trim().toLowerCase();
-  if (s === "yes" || s === "true" || s === "1") return true;
-  return false;
+  if (!modal || !openBtn || !closeBtn || !signupBtn || !loginBtn || !logoutBtn) return;
+
+  openBtn.onclick = () => { if (err) err.textContent = ""; show(modal, true); };
+  closeBtn.onclick = () => show(modal, false);
+
+  signupBtn.onclick = async () => {
+    if (err) err.textContent = "";
+    const email = ($("email")?.value || "").trim();
+    const password = $("password")?.value || "";
+    if (!email || !password) { if (err) err.textContent = "Email and password required."; return; }
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      show(modal, false);
+    } catch (e) {
+      if (err) err.textContent = e?.message || "Sign up failed.";
+    }
+  };
+
+  loginBtn.onclick = async () => {
+    if (err) err.textContent = "";
+    const email = ($("email")?.value || "").trim();
+    const password = $("password")?.value || "";
+    if (!email || !password) { if (err) err.textContent = "Email and password required."; return; }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      show(modal, false);
+    } catch (e) {
+      if (err) err.textContent = e?.message || "Login failed.";
+    }
+  };
+
+  logoutBtn.onclick = async () => {
+    await signOut(auth);
+  };
+
+  // close when clicking outside card
+  modal.addEventListener("click", (ev) => {
+    if (ev.target === modal) show(modal, false);
+  });
 }
 
 /* ===================== NAVIGATION ===================== */
-function showView(id) {
+window.showView = function (id) {
   const views = document.querySelectorAll(".view");
   for (const v of views) v.style.display = "none";
 
@@ -72,12 +157,10 @@ function showView(id) {
     stopScanner();
   }
 
-  // Auto sync when opening library (helps iPhone/Safari where localStorage may be empty)
   if (id === "view-library") {
-    // don’t spam requests
     if (!librarySyncInFlight) loadLibrary();
   }
-}
+};
 
 /* ===================== SCANNER ===================== */
 async function loadQuagga() {
@@ -105,7 +188,7 @@ function isPlausibleIsbnBarcode(raw) {
   return false;
 }
 
-async function startScanner() {
+window.startScanner = async function startScanner() {
   if (scannerActive) return;
   scannerActive = true;
   detectionLocked = false;
@@ -175,7 +258,7 @@ async function startScanner() {
 
   if (Quagga.offDetected) Quagga.offDetected(onDetectedRaw);
   Quagga.onDetected(onDetectedRaw);
-}
+};
 
 function stopScanner() {
   scannerActive = false;
@@ -187,9 +270,7 @@ function stopScanner() {
   } catch {}
 
   if (mediaStream) {
-    try {
-      mediaStream.getTracks().forEach((t) => t.stop());
-    } catch {}
+    try { mediaStream.getTracks().forEach((t) => t.stop()); } catch {}
     mediaStream = null;
   }
 
@@ -206,10 +287,7 @@ function onDetectedRaw(result) {
   if (!isPlausibleIsbnBarcode(raw)) return;
 
   if (raw === lastCode) sameCount += 1;
-  else {
-    lastCode = raw;
-    sameCount = 1;
-  }
+  else { lastCode = raw; sameCount = 1; }
 
   const now = Date.now();
   if (now - lastAcceptTs < 1200) return;
@@ -226,9 +304,7 @@ async function onDetected(result) {
 
   stopScanner();
 
-  try {
-    if (navigator.vibrate) navigator.vibrate(80);
-  } catch {}
+  try { if (navigator.vibrate) navigator.vibrate(80); } catch {}
 
   const raw = result && result.codeResult ? result.codeResult.code : "";
   handleISBN(raw);
@@ -240,7 +316,7 @@ function normalizeIsbn(raw) {
 }
 
 async function lookupGoogleBooks(isbn) {
-  if (!GOOGLE_BOOKS_API_KEY || GOOGLE_BOOKS_API_KEY === "YOUR_KEY") return null;
+  if (!GOOGLE_BOOKS_API_KEY) return null;
 
   const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&maxResults=1&key=${encodeURIComponent(
     GOOGLE_BOOKS_API_KEY
@@ -321,26 +397,9 @@ async function handleISBN(raw) {
 
     const isRead = await askReadStatus(title);
 
-    const book = { isbn, title, author, image, category, readBy: emptyReadBy() };
-    book.readBy[CURRENT_USER] = !!isRead;
+    const book = { isbn, title, author, image, category, read: !!isRead };
 
-    // preserve existing other-user statuses if this isbn already exists locally
-    const existing = myLibrary.find((b) => b.isbn === isbn);
-    if (existing) {
-      ensureReadBy(existing);
-      book.readBy = { ...existing.readBy, ...book.readBy };
-      book.readBy[CURRENT_USER] = !!isRead;
-    }
-
-    // upsert
-    myLibrary = myLibrary.filter((b) => b.isbn !== isbn);
-    myLibrary.push(book);
-
-    saveLibrary();
-    populateCategoryFilter();
-    applyFilters();
-
-    cloudSync("add", book);
+    await upsertBook(book);
     showView("view-library");
   } catch (e) {
     console.error("Lookup failed:", e);
@@ -349,84 +408,111 @@ async function handleISBN(raw) {
   }
 }
 
-/* ===================== CLOUD ===================== */
-async function loadLibrary() {
+/* ===================== FIRESTORE CRUD ===================== */
+async function upsertBook(book) {
+  if (!currentUser) {
+    showToast("Log in to save books", "#6c757d");
+    show($("auth-modal"), true);
+    return;
+  }
+
+  const id = String(book.isbn || crypto.randomUUID()).replaceAll(":", "_");
+
+  await setDoc(bookRef(id), {
+    isbn: book.isbn || "",
+    title: book.title || "Unknown",
+    author: book.author || "Unknown",
+    image: (book.image || "").replace("http://", "https://"),
+    category: book.category || "General & Other",
+    read: !!book.read,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+
+  await loadLibrary();
+}
+
+window.loadLibrary = async function loadLibrary() {
   librarySyncInFlight = true;
   showToast("Syncing...", "#17a2b8");
 
   try {
-    const res = await fetch(GOOGLE_SHEET_URL, { cache: "no-store" });
-    const data = await res.json();
+    if (!currentUser) {
+      // offline / logged out mode (no cloud)
+      myLibrary = loadLocalFallback();
+      populateCategoryFilter();
+      applyFilters();
+      showToast("Log in to sync", "#6c757d");
+      return;
+    }
 
-    if (!Array.isArray(data)) throw new Error("Bad data");
+    const snap = await getDocs(libCol());
+    myLibrary = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    myLibrary = data.map((b) => {
-      const isbn = String(b.isbn || "").trim();
-      const img =
-        String(b.image || "").replace("http://", "https://") ||
-        (isbn ? `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg` : "");
+    // stable sort: title
+    myLibrary.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
 
-      // SUPPORT BOTH SHAPES:
-      // 1) flat columns: read_sohini/read_som/read_rehan = "YES"/"NO"
-      // 2) nested object: readBy: { sohini: true, ... }
-      const readBy = emptyReadBy();
-
-      // nested readBy
-      if (b.readBy && typeof b.readBy === "object") {
-        for (const u of USERS) readBy[u] = !!b.readBy[u];
-      }
-
-      // flat columns override/augment if present
-      for (const u of USERS) {
-        const k = `read_${u}`;
-        if (k in b) readBy[u] = parseYesNo(b[k]);
-      }
-
-      return {
-        isbn,
-        title: b.title || "Unknown",
-        author: b.author || "Unknown",
-        image: img,
-        category: b.category || "General & Other",
-        readBy,
-      };
-    });
-
-    saveLibrary();
+    saveLocalFallback(myLibrary);
     populateCategoryFilter();
     applyFilters();
     showToast("Sync OK", "#28a745");
   } catch (e) {
     console.error(e);
     showToast("Offline Mode", "#6c757d");
+    myLibrary = loadLocalFallback();
     populateCategoryFilter();
     applyFilters();
   } finally {
     librarySyncInFlight = false;
   }
+};
+
+async function deleteBook(bookIdOrIsbn) {
+  // we store doc id as isbn where possible, but library list also includes id
+  if (!confirm("Delete?")) return;
+
+  const b = myLibrary.find(x => x.id === bookIdOrIsbn || x.isbn === bookIdOrIsbn);
+  myLibrary = myLibrary.filter(x => x !== b);
+
+  saveLocalFallback(myLibrary);
+  populateCategoryFilter();
+  applyFilters();
+
+  if (!currentUser) return;
+
+  const id = b?.id || String(bookIdOrIsbn).replaceAll(":", "_");
+  try {
+    await deleteDoc(bookRef(id));
+  } catch {}
 }
 
-function cloudSync(action, book) {
-  const payload = { action, user: CURRENT_USER, data: book };
+async function toggleRead(bookIdOrIsbn) {
+  const b = myLibrary.find(x => x.id === bookIdOrIsbn || x.isbn === bookIdOrIsbn);
+  if (!b) return;
 
-  fetch(GOOGLE_SHEET_URL, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  }).catch(() => {});
+  b.read = !b.read;
+
+  saveLocalFallback(myLibrary);
+  populateCategoryFilter();
+  applyFilters();
+
+  if (!currentUser) return;
+
+  const id = b.id || String(b.isbn || bookIdOrIsbn).replaceAll(":", "_");
+  await setDoc(bookRef(id), { read: !!b.read, updatedAt: serverTimestamp() }, { merge: true });
 }
 
 /* ===================== UI ===================== */
 function askReadStatus(title) {
   return new Promise((res) => {
-    const m = document.getElementById("read-modal");
-    document.getElementById("modal-title").textContent = title;
+    const m = $("read-modal");
+    $("modal-title").textContent = title;
     m.style.display = "flex";
 
-    document.getElementById("btn-read-yes").onclick = () => {
+    $("btn-read-yes").onclick = () => {
       m.style.display = "none";
       res(true);
     };
-    document.getElementById("btn-read-no").onclick = () => {
+    $("btn-read-no").onclick = () => {
       m.style.display = "none";
       res(false);
     };
@@ -436,14 +522,11 @@ function askReadStatus(title) {
 function renderLibrary(list) {
   if (!Array.isArray(list)) list = myLibrary;
 
-  const ul = document.getElementById("book-list");
+  const ul = $("book-list");
   if (!ul) return;
   ul.innerHTML = "";
 
   list.forEach((b) => {
-    ensureReadBy(b);
-    const mine = myReadStatus(b);
-
     const li = document.createElement("li");
     li.className = "book-item";
 
@@ -472,14 +555,14 @@ function renderLibrary(list) {
     category.textContent = "📚 " + (b.category || "Uncategorised");
 
     const flag = document.createElement("span");
-    flag.className = `status-flag ${mine ? "read" : "unread"}`;
-    flag.textContent = mine ? "✅ Read" : "📖 Unread";
-    flag.onclick = () => toggleRead(b.isbn);
+    flag.className = `status-flag ${b.read ? "read" : "unread"}`;
+    flag.textContent = b.read ? "✅ Read" : "📖 Unread";
+    flag.onclick = () => toggleRead(b.id || b.isbn);
 
     const del = document.createElement("button");
     del.className = "delete-btn";
     del.textContent = "🗑️";
-    del.onclick = () => deleteBook(b.isbn);
+    del.onclick = () => deleteBook(b.id || b.isbn);
 
     info.append(title, author, category, flag);
     li.append(img, info, del);
@@ -487,38 +570,7 @@ function renderLibrary(list) {
   });
 }
 
-function toggleRead(isbn) {
-  const b = myLibrary.find((x) => x.isbn === isbn);
-  if (!b) return;
-
-  ensureReadBy(b);
-  b.readBy[CURRENT_USER] = !b.readBy[CURRENT_USER];
-
-  saveLibrary();
-  populateCategoryFilter();
-  applyFilters();
-
-  cloudSync("update", b);
-}
-
-function deleteBook(isbn) {
-  if (!confirm("Delete?")) return;
-  const b = myLibrary.find((x) => x.isbn === isbn);
-
-  myLibrary = myLibrary.filter((x) => x.isbn !== isbn);
-  saveLibrary();
-  populateCategoryFilter();
-  applyFilters();
-
-  if (b) cloudSync("delete", b);
-  else cloudSync("delete", { isbn });
-}
-
 /* ===================== UTIL ===================== */
-function saveLibrary() {
-  localStorage.setItem("myLibrary", JSON.stringify(myLibrary));
-}
-
 function showToast(msg, color) {
   const t = document.createElement("div");
   t.className = "toast";
@@ -543,7 +595,6 @@ function isValidISBN(isbn) {
 
   if (isbn.length === 13) {
     if (!/^\d{13}$/.test(isbn)) return false;
-
     let sum = 0;
     for (let i = 0; i < 13; i++) {
       const n = parseInt(isbn[i], 10);
@@ -556,11 +607,11 @@ function isValidISBN(isbn) {
 }
 
 /* ===================== FILTERS ===================== */
-function applyFilters() {
-  const searchEl = document.getElementById("searchBox");
-  const readEl = document.getElementById("filterRead");
-  const catEl = document.getElementById("filterCategory");
-  const sortEl = document.getElementById("sortBy");
+window.applyFilters = function applyFilters() {
+  const searchEl = $("searchBox");
+  const readEl = $("filterRead");
+  const catEl = $("filterCategory");
+  const sortEl = $("sortBy");
 
   const q = searchEl ? (searchEl.value || "").toLowerCase() : "";
   const readFilter = readEl ? readEl.value : "all";
@@ -580,8 +631,8 @@ function applyFilters() {
     });
   }
 
-  if (readFilter === "read") books = books.filter((b) => !!(b.readBy && b.readBy[CURRENT_USER]));
-  if (readFilter === "unread") books = books.filter((b) => !(b.readBy && b.readBy[CURRENT_USER]));
+  if (readFilter === "read") books = books.filter((b) => !!b.read);
+  if (readFilter === "unread") books = books.filter((b) => !b.read);
 
   if (catFilter !== "all") books = books.filter((b) => (b.category || "") === catFilter);
 
@@ -589,29 +640,39 @@ function applyFilters() {
 
   renderLibrary(books);
   updateHomeStats();
-}
+};
 
 function updateHomeStats() {
   const total = myLibrary.length;
-  const read = myLibrary.filter((b) => b.readBy && b.readBy[CURRENT_USER]).length;
+  const read = myLibrary.filter((b) => !!b.read).length;
 
-  const sc = document.getElementById("stat-count");
-  const sr = document.getElementById("stat-read");
-  const su = document.getElementById("stat-unread");
+  const sc = $("stat-count");
+  const sr = $("stat-read");
+  const su = $("stat-unread");
 
   if (sc) sc.textContent = total;
   if (sr) sr.textContent = read;
   if (su) su.textContent = total - read;
 }
 
-function populateCategoryFilter() {
-  const select = document.getElementById("filterCategory");
+window.populateCategoryFilter = function populateCategoryFilter() {
+  const select = $("filterCategory");
   if (!select) return;
 
   const cats = [...new Set(myLibrary.map((b) => b.category).filter(Boolean))].sort();
   select.innerHTML =
     `<option value="all">All categories</option>` +
-    cats.map((c) => `<option value="${c}">${c}</option>`).join("");
+    cats.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+};
+
+function escapeHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, (m) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  }[m]));
 }
 
 /* ===================== CATEGORY NORMALISATION ===================== */
@@ -646,8 +707,23 @@ function normaliseCategory(subjects = []) {
   return "General & Other";
 }
 
+/* ===================== LOCAL FALLBACK (optional) ===================== */
+function saveLocalFallback(lib) {
+  try { localStorage.setItem("bn_local_library", JSON.stringify(lib || [])); } catch {}
+}
+function loadLocalFallback() {
+  try {
+    const saved = localStorage.getItem("bn_local_library");
+    if (!saved) return [];
+    const arr = JSON.parse(saved) || [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
 /* ===================== MANUAL ISBN ===================== */
-const manualBtn = document.getElementById("manual-btn");
+const manualBtn = $("manual-btn");
 if (manualBtn) {
   manualBtn.onclick = () => {
     const isbn = prompt("Enter ISBN:");
@@ -657,25 +733,27 @@ if (manualBtn) {
 
 /* ===================== INIT ===================== */
 window.onload = () => {
-  const saved = localStorage.getItem("myLibrary");
-  if (saved) {
-    try {
-      myLibrary = JSON.parse(saved) || [];
-      myLibrary = myLibrary.map((b) => {
-        // legacy isRead -> assume it was sohini
-        if (!b.readBy && Object.prototype.hasOwnProperty.call(b, "isRead")) {
-          b.readBy = emptyReadBy();
-          b.readBy.sohini = !!b.isRead;
-        }
-        ensureReadBy(b);
-        return b;
-      });
-    } catch {
-      myLibrary = [];
-    }
-  }
+  bindAuthModal();
 
+  // render something instantly (offline fallback)
+  myLibrary = loadLocalFallback();
   populateCategoryFilter();
   applyFilters();
+
+  // start on home
   showView("view-home");
+
+  // auth changes decide whether we load cloud library
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user || null;
+    setAuthUI();
+
+    if (currentUser) {
+      await loadLibrary();
+    } else {
+      myLibrary = loadLocalFallback();
+      populateCategoryFilter();
+      applyFilters();
+    }
+  });
 };
