@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<title>BookWorm</title>
+
+<link rel="stylesheet" href="style.css">
+
+<!-- App identity -->
+<link rel="icon" href="/BookWorm/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/BookWorm/favicon.png">
+
+<!-- Prevent iOS from hijacking favicon -->
+<link rel="apple-touch-startup-image" href="/BookWorm/blank.png">
+
+<meta name="theme-color" content="#6c5ce7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- HOME -->
+<div id="view-home" class="view">
+  <div class="welcome-card">
+    <h1 class="app-title">
+      <img src="/BookWorm/favicon.png" class="inline-logo" alt="">
+      BookWorm
+    </h1>
+
+    <p class="tagline">Your personal library — beautifully organised.</p>
+
+    <div class="stat-row">
+      <div class="stat"><strong id="stat-count">0</strong><span>Books</span></div>
+      <div class="stat"><strong id="stat-read">0</strong><span>Read</span></div>
+      <div class="stat"><strong id="stat-unread">0</strong><span>Unread</span></div>
+    </div>
+
+    <button onclick="showView('view-scanner')" class="menu-btn primary">➕ Add New Book</button>
+    <button onclick="showView('view-library')" class="menu-btn secondary">📂 View Library</button>
+  </div>
+</div>
+
+<!-- SCANNER -->
+<div id="view-scanner" class="view">
+  <button class="back-btn" onclick="showView('view-home')">← Back</button>
+  <div id="interactive" class="viewport"></div>
+  <div class="controls">
+    <button onclick="startScanner()" class="menu-btn orange-debug">Start Scanner</button>
+    <button id="manual-btn" class="menu-btn secondary">Manual ISBN Entry</button>
+  </div>
+</div>
+
+<!-- LIBRARY -->
+<div id="view-library" class="view">
+  <div class="header-row">
+    <button class="back-btn" onclick="showView('view-home')">← Back</button>
+    <h2 style="flex-grow:1;margin:0 10px;">My Library</h2>
+    <button class="sync-btn" onclick="loadLibrary()">🔄 Sync</button>
+  </div>
+
+  <div class="library-tools">
+    <input id="searchBox" placeholder="🔍 Search..." oninput="applyFilters()">
+
+    <select id="filterCategory" onchange="applyFilters()">
+      <option value="all">All categories</option>
+    </select>
+
+    <select id="filterRead" onchange="applyFilters()">
+      <option value="all">All</option>
+      <option value="read">Read</option>
+      <option value="unread">Unread</option>
+    </select>
+
+    <select id="sortBy" onchange="applyFilters()">
+      <option value="title">Sort: Title</option>
+      <option value="author">Sort: Author</option>
+      <option value="category">Sort: Category</option>
+    </select>
+  </div>
+
+  <ul id="book-list"></ul>
+</div>
+
+<!-- MODAL -->
+<div id="read-modal" class="modal-overlay">
+  <div class="modal-card">
+    <h3 id="modal-title">Book Found!</h3>
+    <p>Have you read this book?</p>
+    <div class="modal-buttons">
+      <button id="btn-read-yes" class="modal-btn yes">✅ Yes</button>
+      <button id="btn-read-no" class="modal-btn no">📖 No</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js?v=4"></script>
+
+<!-- Guarantees category dropdown works -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof populateCategoryFilter === "function") populateCategoryFilter();
+});
+</script>
+
+</body>
+</html>
