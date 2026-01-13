@@ -377,9 +377,3 @@ body{
   min-height: 18px;
 }
 
-.force-big{
-  width: 72px !important;
-  height: 72px !important;
-  border-radius: 16px !important;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.45) !important;
-}
