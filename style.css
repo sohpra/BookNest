@@ -92,10 +92,21 @@ body{
   letter-spacing:-0.5px;
 }
 .inline-logo{
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  flex-shrink: 0;
 }
+
+/* Make it BIGGER on phones */
+@media (max-width: 520px){
+  .inline-logo{
+    width: 64px;
+    height: 64px;
+  }
+}
+
 
 .inline-logo.big{
   width: 52px;
