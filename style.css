@@ -377,3 +377,18 @@ body{
   min-height: 18px;
 }
 
+/* Clamp scanner size on mobile */
+#interactive video,
+#interactive canvas{
+  width: 100% !important;
+  height: auto !important;
+  max-height: 55vh;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+/* Prevent viewport container from stretching page */
+#interactive{
+  max-height: 55vh;
+  overflow: hidden;
+}
