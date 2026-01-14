@@ -1091,6 +1091,15 @@ if (manualBtn) {
 }
 
 /* ===================== INIT ===================== */
+window.copyInviteLink = function () {
+  if (!familyId) return alert("Family not ready yet.");
+
+  const link = `${location.origin}${location.pathname}?join=${familyId}`;
+  navigator.clipboard.writeText(link);
+  showToast("Invite link copied!", "#28a745");
+};
+
+
 window.onload = () => {
   bindAuthModal();
 
