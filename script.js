@@ -1091,13 +1091,20 @@ if (manualBtn) {
 }
 
 /* ===================== INIT ===================== */
-window.copyInviteLink = function () {
-  if (!familyId) return alert("Family not ready yet.");
+window.copyInviteLink = function copyInviteLink() {
+  if (!familyId) {
+    showToast("Family not ready yet", "#dc3545");
+    return;
+  }
 
   const link = `${location.origin}${location.pathname}?join=${familyId}`;
-  navigator.clipboard.writeText(link);
-  showToast("Invite link copied!", "#28a745");
+  navigator.clipboard.writeText(link).then(() => {
+    showToast("Invite link copied!", "#28a745");
+  }).catch(() => {
+    alert("Copy failed. Long-press this link:\n\n" + link);
+  });
 };
+
 
 
 window.onload = () => {
