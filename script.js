@@ -93,16 +93,15 @@ function memberRef(fid, uid) {
 
 // Shelves (denormalised docs with metadata for fast list rendering)
 function sharedShelfCol(fid) {
-  return collection(db, "families", fid, "shelves", "shared", "books");
+  return collection(db, "families", fid, "books");
 }
 function privateShelfCol(fid, uid) {
-  return collection(db, "families", fid, "shelves", `private_${uid}`, "books");
+  return collection(db, "families", fid, "privateShelves", uid, "books");
 }
-
-// Per-book metadata canonical
 function bookMetaRef(fid, bookId) {
   return doc(db, "families", fid, "books", bookId);
 }
+
 
 // Per-user data for a book (read, rating, notes, tags etc)
 function userDataRef(fid, bookId, uid) {
@@ -652,93 +651,33 @@ function bookIdFromIsbn(isbn) {
 }
 
 async function upsertBookFamily(book, userData) {
-  if (!currentUser) {
-    showToast("Log in to save books", "#6c757d");
-    show($("auth-modal"), true);
-    return;
-  }
-
+  if (!currentUser) return;
   if (!familyId) await ensureFamilyVault();
-  if (!familyId) {
-    showToast("Family not ready", "#dc3545");
-    return;
-  }
 
   const bookId = bookIdFromIsbn(book.isbn);
 
-  // 0) Ensure member doc exists (important for rules + new joins)
-  await setDoc(
-    memberRef(familyId, currentUser.uid),
-    {
-      name: currentUser.email || "Member",
-      role: "child",
-      joinedAt: serverTimestamp(),
-    },
-    { merge: true }
-  ).catch(() => {});
+  // Write canonical shared family shelf
+  await setDoc(bookMetaRef(familyId, bookId), {
+    isbn: book.isbn || "",
+    title: book.title || "Unknown",
+    author: book.author || "Unknown",
+    image: (book.image || "").replace("http://", "https://"),
+    category: book.category || "General & Other",
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 
-  // 1) Save canonical metadata
-  await setDoc(
-    bookMetaRef(familyId, bookId),
-    {
-      isbn: book.isbn || "",
-      title: book.title || "Unknown",
-      author: book.author || "Unknown",
-      image: (book.image || "").replace("http://", "https://"),
-      category: book.category || "General & Other",
-      updatedAt: serverTimestamp(),
-      createdAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
-
-  // 2) Write to shelf (denormalised for fast lists)
-  const visibility = userData?.visibility || "shared";
-
-  if (visibility === "private") {
-    // remove from shared, add to private
-    await deleteDoc(doc(sharedShelfCol(familyId), bookId)).catch(() => {});
-    await setDoc(
-      doc(privateShelfCol(familyId, currentUser.uid), bookId),
-      {
-        ...book,
-        isbn: book.isbn || "",
-        image: (book.image || "").replace("http://", "https://"),
-        category: book.category || "General & Other",
-        visibility: "private",
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+  // Optional private copy
+  if (userData.visibility === "private") {
+    await setDoc(doc(privateShelfCol(familyId, currentUser.uid), bookId), { ...book }, { merge: true });
   } else {
-    // remove from private, add to shared
-    await deleteDoc(doc(privateShelfCol(familyId, currentUser.uid), bookId)).catch(() => {});
-    await setDoc(
-      doc(sharedShelfCol(familyId), bookId),
-      {
-        ...book,
-        isbn: book.isbn || "",
-        image: (book.image || "").replace("http://", "https://"),
-        category: book.category || "General & Other",
-        visibility: "shared",
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+    await deleteDoc(doc(privateShelfCol(familyId, currentUser.uid), bookId)).catch(()=>{});
   }
 
-  // 3) Per-user data
-  await setDoc(
-    userDataRef(familyId, bookId, currentUser.uid),
-    {
-      read: !!userData?.read,
-      rating: userData?.rating ?? null,
-      notes: userData?.notes ?? "",
-      tags: Array.isArray(userData?.tags) ? userData.tags : [],
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
+  // Per-user metadata
+  await setDoc(userDataRef(familyId, bookId, currentUser.uid), {
+    read: !!userData.read,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 
   await loadLibrary();
 }
@@ -811,18 +750,19 @@ window.loadLibrary = async function loadLibrary() {
 
     // Load shared shelf + private shelf
     const [sharedSnap, privateSnap] = await Promise.all([
-      getDocs(sharedShelfCol(familyId)),
-      getDocs(privateShelfCol(familyId, currentUser.uid)),
-    ]);
+    getDocs(sharedShelfCol(familyId)),
+    getDocs(privateShelfCol(familyId, currentUser.uid))
+  ]);
 
-    const sharedBooks = sharedSnap.docs.map((d) => ({ bookId: d.id, ...d.data(), visibility: "shared" }));
-    const privateBooks = privateSnap.docs.map((d) => ({ bookId: d.id, ...d.data(), visibility: "private" }));
+  const privateIds = new Set(privateSnap.docs.map(d => d.id));
 
-    // Merge (private wins if same id exists)
-    const map = new Map();
-    for (const b of sharedBooks) map.set(b.bookId, b);
-    for (const b of privateBooks) map.set(b.bookId, b);
-    const merged = Array.from(map.values());
+  const merged = sharedSnap.docs
+    .filter(d => !privateIds.has(d.id))
+    .map(d => ({ bookId: d.id, ...d.data(), visibility: "shared" }))
+    .concat(
+      privateSnap.docs.map(d => ({ bookId: d.id, ...d.data(), visibility: "private" }))
+    );
+
 
     // Pull per-user read data for each book
     const withUserData = await Promise.all(
