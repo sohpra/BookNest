@@ -1119,19 +1119,19 @@ window.onload = () => {
   showView("view-home");
 
   onAuthStateChanged(auth, async (user) => {
-    currentUser = user || null;
-    setAuthUI();
+  currentUser = user || null;
+  setAuthUI();
 
     if (currentUser) {
-      const joined = await tryJoinFamily();
-      if (!joined) await ensureFamilyVault();
+      familyId = null;                 // 🔥 RESET FIRST
+      await ensureFamilyVault();       // 🔥 FORCE CREATE
       await loadLibrary();
-    }
-    else {
+    } else {
       familyId = null;
       myLibrary = loadLocalFallback();
       populateCategoryFilter();
       applyFilters();
     }
   });
+
 };
