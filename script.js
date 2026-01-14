@@ -67,6 +67,12 @@ function show(el, yes) {
   if (el) el.style.display = yes ? "" : "none";
 }
 
+function getJoinFamilyId() {
+  const p = new URLSearchParams(location.search);
+  return p.get("join");
+}
+
+
 /* ===================== URL PARAMS (optional invites) ===================== */
 const params = new URLSearchParams(location.search);
 const JOIN_FAMILY_ID = (params.get("family") || "").trim(); // e.g. ?family=abc123
@@ -1119,12 +1125,30 @@ window.onload = () => {
   showView("view-home");
 
   onAuthStateChanged(auth, async (user) => {
-  currentUser = user || null;
-  setAuthUI();
+    currentUser = user || null;
+    setAuthUI();
 
     if (currentUser) {
-      familyId = null;                 // 🔥 RESET FIRST
-      await ensureFamilyVault();       // 🔥 FORCE CREATE
+      const joinId = getJoinFamilyId();
+
+      if (joinId) {
+        familyId = joinId;
+
+        await setDoc(memberRef(joinId, currentUser.uid), {
+          name: currentUser.email || "Member",
+          role: "child",
+          joinedAt: serverTimestamp(),
+        });
+
+        await setDoc(userIndexRef(currentUser.uid), {
+          familyId: joinId,
+          updatedAt: serverTimestamp(),
+        });
+
+        history.replaceState({}, "", location.pathname);
+      }
+
+      await ensureFamilyVault();
       await loadLibrary();
     } else {
       familyId = null;
