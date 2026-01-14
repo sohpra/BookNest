@@ -1,7 +1,10 @@
-/* ===================== BOOKNEST (PUBLIC MULTI-USER) ===================== */
-/* Replaces: Google Sheets + fake USERS
-   Adds: Firebase Auth + Firestore per-user library
-   Keeps: Quagga scanner, OpenLibrary/GoogleBooks lookup, category normalisation, UI flow
+/* ===================== BOOKNEST (FAMILY MODE v1) ===================== */
+/* Keeps: Auth UI, Scanner (Quagga), Lookups, Filters, UI flow
+   Changes: Data model => families/{familyId}/...
+   - Shared shelf default
+   - Private shelf per user
+   - Per-user read stored in userData subcollection
+   - Auto-creates a family vault on first login ("Our BookNest")
 */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -10,7 +13,7 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
@@ -18,9 +21,10 @@ import {
   collection,
   doc,
   getDocs,
+  getDoc,
   setDoc,
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ===================== FIREBASE CONFIG ===================== */
@@ -30,7 +34,7 @@ const firebaseConfig = {
   projectId: "booknest-af892",
   storageBucket: "booknest-af892.firebasestorage.app",
   messagingSenderId: "210559796706",
-  appId: "1:210559796706:web:c1e50148e6d9f5286ce5bb"
+  appId: "1:210559796706:web:c1e50148e6d9f5286ce5bb",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -38,15 +42,14 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 /* ===================== CONFIG ===================== */
-// Quagga
 const Quagga_CDN = "https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js";
-
 // Leave as "" to skip Google Books and use OpenLibrary only.
 const GOOGLE_BOOKS_API_KEY = ""; // optional
 
 /* ===================== STATE ===================== */
-let currentUser = null;          // Firebase user
-let myLibrary = [];              // array of books for current user
+let currentUser = null; // Firebase user
+let familyId = null;    // current family vault id
+let myLibrary = [];     // merged: shared + private (with per-user read)
 let scannerActive = false;
 let detectionLocked = false;
 let mediaStream = null;
@@ -59,14 +62,78 @@ let librarySyncInFlight = false;
 
 /* ===================== DOM HELPERS ===================== */
 const $ = (id) => document.getElementById(id);
-function show(el, yes) { if (el) el.style.display = yes ? "" : "none"; }
-
-/* ===================== FIRESTORE PATHS ===================== */
-function libCol() {
-  return collection(db, "users", currentUser.uid, "library");
+function show(el, yes) {
+  if (el) el.style.display = yes ? "" : "none";
 }
-function bookRef(bookId) {
-  return doc(db, "users", currentUser.uid, "library", bookId);
+
+/* ===================== FAMILY DATA PATHS ===================== */
+// Index from user -> family
+function userIndexRef(uid) {
+  return doc(db, "userIndex", uid);
+}
+
+function familyRef(fid) {
+  return doc(db, "families", fid);
+}
+
+function memberRef(fid, uid) {
+  return doc(db, "families", fid, "members", uid);
+}
+
+// Shelves (denormalised docs with metadata for fast list rendering)
+function sharedShelfCol(fid) {
+  return collection(db, "families", fid, "shelves", "shared", "books");
+}
+function privateShelfCol(fid, uid) {
+  return collection(db, "families", fid, "shelves", `private_${uid}`, "books");
+}
+
+// Per-book metadata canonical (optional, but good future-proofing)
+function bookMetaRef(fid, bookId) {
+  return doc(db, "families", fid, "books", bookId);
+}
+
+// Per-user data for a book (read, rating, notes, tags etc)
+function userDataRef(fid, bookId, uid) {
+  return doc(db, "families", fid, "books", bookId, "userData", uid);
+}
+
+/* ===================== FAMILY BOOTSTRAP ===================== */
+function newId() {
+  // crypto.randomUUID is supported in modern browsers; fallback if needed
+  return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2));
+}
+
+async function ensureFamilyVault() {
+  if (!currentUser) return null;
+
+  const idx = await getDoc(userIndexRef(currentUser.uid));
+  if (idx.exists() && idx.data()?.familyId) {
+    familyId = idx.data().familyId;
+    return familyId;
+  }
+
+  // Create a new family vault for this parent (v1 behaviour)
+  familyId = newId();
+
+  await setDoc(familyRef(familyId), {
+    name: "Our BookNest",
+    createdBy: currentUser.uid,
+    createdAt: serverTimestamp(),
+  });
+
+  await setDoc(memberRef(familyId, currentUser.uid), {
+    name: currentUser.email || "Parent",
+    role: "parent",
+    joinedAt: serverTimestamp(),
+  });
+
+  await setDoc(userIndexRef(currentUser.uid), {
+    familyId,
+    updatedAt: serverTimestamp(),
+  });
+
+  return familyId;
 }
 
 /* ===================== AUTH UI ===================== */
@@ -102,15 +169,20 @@ function bindAuthModal() {
 
   if (!modal || !openBtn || !closeBtn || !signupBtn || !loginBtn || !logoutBtn) return;
 
-  openBtn.onclick = () => { if (err) err.textContent = ""; show(modal, true); };
+  openBtn.onclick = () => {
+    if (err) err.textContent = "";
+    show(modal, true);
+  };
   closeBtn.onclick = () => show(modal, false);
 
   signupBtn.onclick = async () => {
     if (err) err.textContent = "";
     const email = ($("email")?.value || "").trim();
     const password = $("password")?.value || "";
-    if (!email || !password) { if (err) err.textContent = "Email and password required."; return; }
-
+    if (!email || !password) {
+      if (err) err.textContent = "Email and password required.";
+      return;
+    }
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       show(modal, false);
@@ -123,8 +195,10 @@ function bindAuthModal() {
     if (err) err.textContent = "";
     const email = ($("email")?.value || "").trim();
     const password = $("password")?.value || "";
-    if (!email || !password) { if (err) err.textContent = "Email and password required."; return; }
-
+    if (!email || !password) {
+      if (err) err.textContent = "Email and password required.";
+      return;
+    }
     try {
       await signInWithEmailAndPassword(auth, email, password);
       show(modal, false);
@@ -137,7 +211,6 @@ function bindAuthModal() {
     await signOut(auth);
   };
 
-  // close when clicking outside card
   modal.addEventListener("click", (ev) => {
     if (ev.target === modal) show(modal, false);
   });
@@ -214,7 +287,11 @@ window.startScanner = async function startScanner() {
     return;
   }
 
+  // iOS/WebKit fix: lock body layout while camera runs
   document.body.style.position = "fixed";
+  document.body.style.top = "0";
+  document.body.style.left = "0";
+  document.body.style.right = "0";
 
   Quagga.init(
     {
@@ -233,10 +310,7 @@ window.startScanner = async function startScanner() {
         multiple: false,
       },
       locate: true,
-      locator: {
-        patchSize: "large",
-        halfSample: false,
-      },
+      locator: { patchSize: "large", halfSample: false },
       numOfWorkers: navigator.hardwareConcurrency || 4,
       frequency: 10,
     },
@@ -267,7 +341,7 @@ function stopScanner() {
   detectionLocked = false;
   resetDetectionStability();
 
-  // 🔥 RELEASE iOS BODY LOCK
+  // release iOS/WebKit body lock
   document.body.style.position = "";
   document.body.style.top = "";
   document.body.style.left = "";
@@ -278,7 +352,9 @@ function stopScanner() {
   } catch {}
 
   if (mediaStream) {
-    try { mediaStream.getTracks().forEach(t => t.stop()); } catch {}
+    try {
+      mediaStream.getTracks().forEach((t) => t.stop());
+    } catch {}
     mediaStream = null;
   }
 
@@ -286,17 +362,18 @@ function stopScanner() {
   if (el) el.innerHTML = "";
 }
 
-
 function onDetectedRaw(result) {
   if (detectionLocked) return;
 
   const raw = result && result.codeResult ? result.codeResult.code : null;
   if (!raw) return;
-
   if (!isPlausibleIsbnBarcode(raw)) return;
 
   if (raw === lastCode) sameCount += 1;
-  else { lastCode = raw; sameCount = 1; }
+  else {
+    lastCode = raw;
+    sameCount = 1;
+  }
 
   const now = Date.now();
   if (now - lastAcceptTs < 1200) return;
@@ -313,7 +390,9 @@ async function onDetected(result) {
 
   stopScanner();
 
-  try { if (navigator.vibrate) navigator.vibrate(80); } catch {}
+  try {
+    if (navigator.vibrate) navigator.vibrate(80);
+  } catch {}
 
   const raw = result && result.codeResult ? result.codeResult.code : "";
   handleISBN(raw);
@@ -367,7 +446,6 @@ async function lookupOpenLibrary(isbn) {
       .filter(Boolean);
   }
 
-  // Better: fetch work subjects (usually richer)
   try {
     const workKey = b.works && b.works[0] ? b.works[0].key : null;
     if (workKey) {
@@ -378,7 +456,6 @@ async function lookupOpenLibrary(isbn) {
   } catch {}
 
   const category = normaliseCategory(rawSubjects);
-
   return { title, author, image: image || fallback, category };
 }
 
@@ -406,9 +483,16 @@ async function handleISBN(raw) {
 
     const isRead = await askReadStatus(title);
 
-    const book = { isbn, title, author, image, category, read: !!isRead };
+    // Shared by default
+    const book = {
+      isbn,
+      title,
+      author,
+      image,
+      category,
+    };
 
-    await upsertBook(book);
+    await upsertBookFamily(book, { read: !!isRead, visibility: "shared" });
     showView("view-library");
   } catch (e) {
     console.error("Lookup failed:", e);
@@ -417,36 +501,147 @@ async function handleISBN(raw) {
   }
 }
 
-/* ===================== FIRESTORE CRUD ===================== */
-async function upsertBook(book) {
+/* ===================== FAMILY CRUD ===================== */
+function bookIdFromIsbn(isbn) {
+  return String(isbn || "").replace(/[^0-9X]/gi, "") || newId();
+}
+
+async function upsertBookFamily(book, userData) {
   if (!currentUser) {
     showToast("Log in to save books", "#6c757d");
     show($("auth-modal"), true);
     return;
   }
 
-  const id = String(book.isbn || crypto.randomUUID()).replaceAll(":", "_");
+  if (!familyId) await ensureFamilyVault();
+  if (!familyId) {
+    showToast("Family not ready", "#dc3545");
+    return;
+  }
 
-  await setDoc(bookRef(id), {
-    isbn: book.isbn || "",
-    title: book.title || "Unknown",
-    author: book.author || "Unknown",
-    image: (book.image || "").replace("http://", "https://"),
-    category: book.category || "General & Other",
-    read: !!book.read,
-    updatedAt: serverTimestamp()
-  }, { merge: true });
+  const bookId = bookIdFromIsbn(book.isbn);
+
+  // 1) Save canonical metadata (future proof)
+  await setDoc(
+    bookMetaRef(familyId, bookId),
+    {
+      isbn: book.isbn || "",
+      title: book.title || "Unknown",
+      author: book.author || "Unknown",
+      image: (book.image || "").replace("http://", "https://"),
+      category: book.category || "General & Other",
+      updatedAt: serverTimestamp(),
+      createdAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  // 2) Write to shelf (denormalised so lists are fast)
+  const visibility = (userData?.visibility || "shared");
+  if (visibility === "private") {
+    // remove from shared, add to private
+    await deleteDoc(doc(sharedShelfCol(familyId), bookId)).catch(() => {});
+    await setDoc(
+      doc(privateShelfCol(familyId, currentUser.uid), bookId),
+      {
+        ...book,
+        isbn: book.isbn || "",
+        image: (book.image || "").replace("http://", "https://"),
+        category: book.category || "General & Other",
+        visibility: "private",
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } else {
+    // remove from private, add to shared
+    await deleteDoc(doc(privateShelfCol(familyId, currentUser.uid), bookId)).catch(() => {});
+    await setDoc(
+      doc(sharedShelfCol(familyId), bookId),
+      {
+        ...book,
+        isbn: book.isbn || "",
+        image: (book.image || "").replace("http://", "https://"),
+        category: book.category || "General & Other",
+        visibility: "shared",
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  }
+
+  // 3) Per-user data (read/rating/notes/tags later)
+  await setDoc(
+    userDataRef(familyId, bookId, currentUser.uid),
+    {
+      read: !!userData?.read,
+      rating: userData?.rating ?? null,
+      notes: userData?.notes ?? "",
+      tags: Array.isArray(userData?.tags) ? userData.tags : [],
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 
   await loadLibrary();
 }
 
+async function setVisibility(bookId, newVisibility) {
+  const b = myLibrary.find((x) => x.bookId === bookId);
+  if (!b) return;
+
+  await upsertBookFamily(
+    {
+      isbn: b.isbn,
+      title: b.title,
+      author: b.author,
+      image: b.image,
+      category: b.category,
+    },
+    { read: !!b.read, visibility: newVisibility }
+  );
+}
+
+async function toggleRead(bookId) {
+  const b = myLibrary.find((x) => x.bookId === bookId);
+  if (!b || !currentUser || !familyId) return;
+
+  b.read = !b.read;
+  saveLocalFallback(myLibrary);
+  populateCategoryFilter();
+  applyFilters();
+
+  await setDoc(
+    userDataRef(familyId, bookId, currentUser.uid),
+    { read: !!b.read, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+}
+
+async function deleteBook(bookId) {
+  if (!confirm("Delete?")) return;
+  if (!currentUser || !familyId) return;
+
+  // Remove from both shelves (shared + this user's private)
+  await deleteDoc(doc(sharedShelfCol(familyId), bookId)).catch(() => {});
+  await deleteDoc(doc(privateShelfCol(familyId, currentUser.uid), bookId)).catch(() => {});
+
+  // Remove userData (for this user)
+  await deleteDoc(userDataRef(familyId, bookId, currentUser.uid)).catch(() => {});
+
+  myLibrary = myLibrary.filter((x) => x.bookId !== bookId);
+  saveLocalFallback(myLibrary);
+  populateCategoryFilter();
+  applyFilters();
+}
+
+/* ===================== LOAD LIBRARY (shared + private) ===================== */
 window.loadLibrary = async function loadLibrary() {
   librarySyncInFlight = true;
   showToast("Syncing...", "#17a2b8");
 
   try {
     if (!currentUser) {
-      // offline / logged out mode (no cloud)
       myLibrary = loadLocalFallback();
       populateCategoryFilter();
       applyFilters();
@@ -454,11 +649,40 @@ window.loadLibrary = async function loadLibrary() {
       return;
     }
 
-    const snap = await getDocs(libCol());
-    myLibrary = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!familyId) await ensureFamilyVault();
 
-    // stable sort: title
-    myLibrary.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+    // Load shared shelf + private shelf
+    const [sharedSnap, privateSnap] = await Promise.all([
+      getDocs(sharedShelfCol(familyId)),
+      getDocs(privateShelfCol(familyId, currentUser.uid)),
+    ]);
+
+    const sharedBooks = sharedSnap.docs.map((d) => ({ bookId: d.id, ...d.data(), visibility: "shared" }));
+    const privateBooks = privateSnap.docs.map((d) => ({ bookId: d.id, ...d.data(), visibility: "private" }));
+
+    // Merge (private wins if same id exists)
+    const map = new Map();
+    for (const b of sharedBooks) map.set(b.bookId, b);
+    for (const b of privateBooks) map.set(b.bookId, b);
+    const merged = Array.from(map.values());
+
+    // Pull per-user read data for each book
+    const readDocs = await Promise.all(
+      merged.map(async (b) => {
+        try {
+          const ud = await getDoc(userDataRef(familyId, b.bookId, currentUser.uid));
+          const read = ud.exists() ? !!ud.data()?.read : false;
+          return { ...b, read };
+        } catch {
+          return { ...b, read: false };
+        }
+      })
+    );
+
+    // Stable sort: title
+    readDocs.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+
+    myLibrary = readDocs;
 
     saveLocalFallback(myLibrary);
     populateCategoryFilter();
@@ -474,41 +698,6 @@ window.loadLibrary = async function loadLibrary() {
     librarySyncInFlight = false;
   }
 };
-
-async function deleteBook(bookIdOrIsbn) {
-  // we store doc id as isbn where possible, but library list also includes id
-  if (!confirm("Delete?")) return;
-
-  const b = myLibrary.find(x => x.id === bookIdOrIsbn || x.isbn === bookIdOrIsbn);
-  myLibrary = myLibrary.filter(x => x !== b);
-
-  saveLocalFallback(myLibrary);
-  populateCategoryFilter();
-  applyFilters();
-
-  if (!currentUser) return;
-
-  const id = b?.id || String(bookIdOrIsbn).replaceAll(":", "_");
-  try {
-    await deleteDoc(bookRef(id));
-  } catch {}
-}
-
-async function toggleRead(bookIdOrIsbn) {
-  const b = myLibrary.find(x => x.id === bookIdOrIsbn || x.isbn === bookIdOrIsbn);
-  if (!b) return;
-
-  b.read = !b.read;
-
-  saveLocalFallback(myLibrary);
-  populateCategoryFilter();
-  applyFilters();
-
-  if (!currentUser) return;
-
-  const id = b.id || String(b.isbn || bookIdOrIsbn).replaceAll(":", "_");
-  await setDoc(bookRef(id), { read: !!b.read, updatedAt: serverTimestamp() }, { merge: true });
-}
 
 /* ===================== UI ===================== */
 function askReadStatus(title) {
@@ -566,14 +755,22 @@ function renderLibrary(list) {
     const flag = document.createElement("span");
     flag.className = `status-flag ${b.read ? "read" : "unread"}`;
     flag.textContent = b.read ? "✅ Read" : "📖 Unread";
-    flag.onclick = () => toggleRead(b.id || b.isbn);
+    flag.onclick = () => toggleRead(b.bookId);
+
+    // NEW: visibility toggle
+    const vis = document.createElement("span");
+    vis.className = "status-flag";
+    vis.style.marginLeft = "10px";
+    vis.style.opacity = ".9";
+    vis.textContent = b.visibility === "private" ? "🔒 Private" : "👪 Shared";
+    vis.onclick = () => setVisibility(b.bookId, b.visibility === "private" ? "shared" : "private");
 
     const del = document.createElement("button");
     del.className = "delete-btn";
     del.textContent = "🗑️";
-    del.onclick = () => deleteBook(b.id || b.isbn);
+    del.onclick = () => deleteBook(b.bookId);
 
-    info.append(title, author, category, flag);
+    info.append(title, author, category, flag, vis);
     li.append(img, info, del);
     ul.appendChild(li);
   });
@@ -645,7 +842,7 @@ window.applyFilters = function applyFilters() {
 
   if (catFilter !== "all") books = books.filter((b) => (b.category || "") === catFilter);
 
-  books.sort((a, b) => (String(a[sort] || "")).localeCompare(String(b[sort] || "")));
+  books.sort((a, b) => String(a[sort] || "").localeCompare(String(b[sort] || "")));
 
   renderLibrary(books);
   updateHomeStats();
@@ -716,9 +913,11 @@ function normaliseCategory(subjects = []) {
   return "General & Other";
 }
 
-/* ===================== LOCAL FALLBACK (optional) ===================== */
+/* ===================== LOCAL FALLBACK ===================== */
 function saveLocalFallback(lib) {
-  try { localStorage.setItem("bn_local_library", JSON.stringify(lib || [])); } catch {}
+  try {
+    localStorage.setItem("bn_local_library", JSON.stringify(lib || []));
+  } catch {}
 }
 function loadLocalFallback() {
   try {
@@ -744,7 +943,7 @@ if (manualBtn) {
 window.onload = () => {
   bindAuthModal();
 
-  // render something instantly (offline fallback)
+  // render instantly (offline fallback)
   myLibrary = loadLocalFallback();
   populateCategoryFilter();
   applyFilters();
@@ -752,14 +951,15 @@ window.onload = () => {
   // start on home
   showView("view-home");
 
-  // auth changes decide whether we load cloud library
   onAuthStateChanged(auth, async (user) => {
     currentUser = user || null;
     setAuthUI();
 
     if (currentUser) {
+      await ensureFamilyVault();
       await loadLibrary();
     } else {
+      familyId = null;
       myLibrary = loadLocalFallback();
       populateCategoryFilter();
       applyFilters();
