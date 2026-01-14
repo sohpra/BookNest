@@ -5,6 +5,7 @@
    - Private shelf per user
    - Per-user read stored in userData subcollection
    - Auto-creates a family vault on first login ("Our BookNest")
+   - Adds: join existing family via ?family=FAMILY_ID (optional, for invites)
 */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -48,8 +49,8 @@ const GOOGLE_BOOKS_API_KEY = ""; // optional
 
 /* ===================== STATE ===================== */
 let currentUser = null; // Firebase user
-let familyId = null;    // current family vault id
-let myLibrary = [];     // merged: shared + private (with per-user read)
+let familyId = null; // current family vault id
+let myLibrary = []; // merged: shared + private (with per-user read)
 let scannerActive = false;
 let detectionLocked = false;
 let mediaStream = null;
@@ -65,6 +66,10 @@ const $ = (id) => document.getElementById(id);
 function show(el, yes) {
   if (el) el.style.display = yes ? "" : "none";
 }
+
+/* ===================== URL PARAMS (optional invites) ===================== */
+const params = new URLSearchParams(location.search);
+const JOIN_FAMILY_ID = (params.get("family") || "").trim(); // e.g. ?family=abc123
 
 /* ===================== FAMILY DATA PATHS ===================== */
 // Index from user -> family
@@ -88,7 +93,7 @@ function privateShelfCol(fid, uid) {
   return collection(db, "families", fid, "shelves", `private_${uid}`, "books");
 }
 
-// Per-book metadata canonical (optional, but good future-proofing)
+// Per-book metadata canonical
 function bookMetaRef(fid, bookId) {
   return doc(db, "families", fid, "books", bookId);
 }
@@ -100,38 +105,97 @@ function userDataRef(fid, bookId, uid) {
 
 /* ===================== FAMILY BOOTSTRAP ===================== */
 function newId() {
-  // crypto.randomUUID is supported in modern browsers; fallback if needed
-  return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2));
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
 }
 
+/**
+ * ensureFamilyVault()
+ * - If user already linked in userIndex -> use it
+ * - Else if URL has ?family=... -> join that family
+ * - Else -> create a new family vault + make this user parent
+ */
 async function ensureFamilyVault() {
   if (!currentUser) return null;
 
-  const idx = await getDoc(userIndexRef(currentUser.uid));
-  if (idx.exists() && idx.data()?.familyId) {
-    familyId = idx.data().familyId;
-    return familyId;
+  // 1) Already linked?
+  try {
+    const idx = await getDoc(userIndexRef(currentUser.uid));
+    if (idx.exists() && idx.data()?.familyId) {
+      familyId = idx.data().familyId;
+      return familyId;
+    }
+  } catch {
+    // ignore, we'll try to bootstrap below
   }
 
-  // Create a new family vault for this parent (v1 behaviour)
+  // 2) Join an existing family (invite link flow)
+  if (JOIN_FAMILY_ID) {
+    const fid = JOIN_FAMILY_ID;
+
+    // Does family exist?
+    const famSnap = await getDoc(familyRef(fid));
+    if (!famSnap.exists()) {
+      showToast("Invite link invalid (family not found)", "#dc3545");
+    } else {
+      // Create member doc for this user (role defaults to child)
+      await setDoc(
+        memberRef(fid, currentUser.uid),
+        {
+          name: currentUser.email || "Member",
+          role: "child",
+          joinedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      // Link user -> family
+      await setDoc(
+        userIndexRef(currentUser.uid),
+        {
+          familyId: fid,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      familyId = fid;
+      return familyId;
+    }
+  }
+
+  // 3) Create a new family vault for this parent (v1 behaviour)
   familyId = newId();
 
-  await setDoc(familyRef(familyId), {
-    name: "Our BookNest",
-    createdBy: currentUser.uid,
-    createdAt: serverTimestamp(),
-  });
+  await setDoc(
+    familyRef(familyId),
+    {
+      name: "Our BookNest",
+      createdBy: currentUser.uid,
+      createdAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 
-  await setDoc(memberRef(familyId, currentUser.uid), {
-    name: currentUser.email || "Parent",
-    role: "parent",
-    joinedAt: serverTimestamp(),
-  });
+  await setDoc(
+    memberRef(familyId, currentUser.uid),
+    {
+      name: currentUser.email || "Parent",
+      role: "parent",
+      joinedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 
-  await setDoc(userIndexRef(currentUser.uid), {
-    familyId,
-    updatedAt: serverTimestamp(),
-  });
+  await setDoc(
+    userIndexRef(currentUser.uid),
+    {
+      familyId,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
 
   return familyId;
 }
@@ -305,10 +369,7 @@ window.startScanner = async function startScanner() {
         },
         area: { top: "25%", right: "10%", left: "10%", bottom: "25%" },
       },
-      decoder: {
-        readers: ["ean_reader"],
-        multiple: false,
-      },
+      decoder: { readers: ["ean_reader"], multiple: false },
       locate: true,
       locator: { patchSize: "large", halfSample: false },
       numOfWorkers: navigator.hardwareConcurrency || 4,
@@ -484,13 +545,7 @@ async function handleISBN(raw) {
     const isRead = await askReadStatus(title);
 
     // Shared by default
-    const book = {
-      isbn,
-      title,
-      author,
-      image,
-      category,
-    };
+    const book = { isbn, title, author, image, category };
 
     await upsertBookFamily(book, { read: !!isRead, visibility: "shared" });
     showView("view-library");
@@ -521,7 +576,18 @@ async function upsertBookFamily(book, userData) {
 
   const bookId = bookIdFromIsbn(book.isbn);
 
-  // 1) Save canonical metadata (future proof)
+  // 0) Ensure member doc exists (important for rules + new joins)
+  await setDoc(
+    memberRef(familyId, currentUser.uid),
+    {
+      name: currentUser.email || "Member",
+      role: "child",
+      joinedAt: serverTimestamp(),
+    },
+    { merge: true }
+  ).catch(() => {});
+
+  // 1) Save canonical metadata
   await setDoc(
     bookMetaRef(familyId, bookId),
     {
@@ -536,8 +602,9 @@ async function upsertBookFamily(book, userData) {
     { merge: true }
   );
 
-  // 2) Write to shelf (denormalised so lists are fast)
-  const visibility = (userData?.visibility || "shared");
+  // 2) Write to shelf (denormalised for fast lists)
+  const visibility = userData?.visibility || "shared";
+
   if (visibility === "private") {
     // remove from shared, add to private
     await deleteDoc(doc(sharedShelfCol(familyId), bookId)).catch(() => {});
@@ -570,7 +637,7 @@ async function upsertBookFamily(book, userData) {
     );
   }
 
-  // 3) Per-user data (read/rating/notes/tags later)
+  // 3) Per-user data
   await setDoc(
     userDataRef(familyId, bookId, currentUser.uid),
     {
@@ -622,11 +689,11 @@ async function deleteBook(bookId) {
   if (!confirm("Delete?")) return;
   if (!currentUser || !familyId) return;
 
-  // Remove from both shelves (shared + this user's private)
+  // Remove from shelves (shared + this user's private)
   await deleteDoc(doc(sharedShelfCol(familyId), bookId)).catch(() => {});
   await deleteDoc(doc(privateShelfCol(familyId, currentUser.uid), bookId)).catch(() => {});
 
-  // Remove userData (for this user)
+  // Remove userData for this user
   await deleteDoc(userDataRef(familyId, bookId, currentUser.uid)).catch(() => {});
 
   myLibrary = myLibrary.filter((x) => x.bookId !== bookId);
@@ -650,6 +717,7 @@ window.loadLibrary = async function loadLibrary() {
     }
 
     if (!familyId) await ensureFamilyVault();
+    if (!familyId) throw new Error("family missing");
 
     // Load shared shelf + private shelf
     const [sharedSnap, privateSnap] = await Promise.all([
@@ -667,7 +735,7 @@ window.loadLibrary = async function loadLibrary() {
     const merged = Array.from(map.values());
 
     // Pull per-user read data for each book
-    const readDocs = await Promise.all(
+    const withUserData = await Promise.all(
       merged.map(async (b) => {
         try {
           const ud = await getDoc(userDataRef(familyId, b.bookId, currentUser.uid));
@@ -679,10 +747,9 @@ window.loadLibrary = async function loadLibrary() {
       })
     );
 
-    // Stable sort: title
-    readDocs.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+    withUserData.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
 
-    myLibrary = readDocs;
+    myLibrary = withUserData;
 
     saveLocalFallback(myLibrary);
     populateCategoryFilter();
@@ -757,7 +824,7 @@ function renderLibrary(list) {
     flag.textContent = b.read ? "✅ Read" : "📖 Unread";
     flag.onclick = () => toggleRead(b.bookId);
 
-    // NEW: visibility toggle
+    // visibility toggle
     const vis = document.createElement("span");
     vis.className = "status-flag";
     vis.style.marginLeft = "10px";
