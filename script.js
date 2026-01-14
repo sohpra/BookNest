@@ -165,6 +165,90 @@ async function ensureFamilyVault() {
     }
   }
 
+  /* ===================== PIN LOGIN ===================== */
+
+async function loginWithPin(pin, name) {
+  if (!familyId) return false;
+
+  const q = await getDoc(doc(db, "families", familyId, "pins", pin));
+  if (!q.exists()) return false;
+
+  const pinUser = q.data();
+
+  await setDoc(memberRef(familyId, pinUser.uid), {
+    name: name || pinUser.name,
+    role: "child",
+    joinedAt: serverTimestamp(),
+  });
+
+  await setDoc(userIndexRef(pinUser.uid), { familyId }, { merge: true });
+  return true;
+}
+
+/* ===================== FAMILY JOIN LINKS ===================== */
+
+function getJoinFamilyFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  return p.get("join");
+}
+
+async function tryJoinFamily() {
+  const joinId = getJoinFamilyFromURL();
+  if (!joinId || !currentUser) return false;
+
+  await setDoc(memberRef(joinId, currentUser.uid), {
+    name: currentUser.email || "Family Member",
+    role: "child",
+    joinedAt: serverTimestamp(),
+  });
+
+  await setDoc(userIndexRef(currentUser.uid), {
+    familyId: joinId,
+    updatedAt: serverTimestamp(),
+  });
+
+  familyId = joinId;
+  return true;
+}
+
+
+async function createKidPin(pin, name) {
+  if (!familyId) return;
+
+  const kidUid = newId();
+
+  await setDoc(doc(db, "families", familyId, "pins", pin), {
+    name,
+    uid: kidUid,
+    createdAt: serverTimestamp(),
+  });
+}
+
+  function getJoinFamilyFromURL() {
+  const p = new URLSearchParams(window.location.search);
+  return p.get("join");
+}
+
+async function tryJoinFamily() {
+  const joinId = getJoinFamilyFromURL();
+  if (!joinId || !currentUser) return false;
+
+  // Attach user to that family
+  await setDoc(memberRef(joinId, currentUser.uid), {
+    name: currentUser.email || "Family Member",
+    role: "child",
+    joinedAt: serverTimestamp(),
+  });
+
+  await setDoc(userIndexRef(currentUser.uid), {
+    familyId: joinId,
+    updatedAt: serverTimestamp(),
+  });
+
+  familyId = joinId;
+  return true;
+}
+
   // 3) Create a new family vault for this parent (v1 behaviour)
   familyId = newId();
 
@@ -1023,9 +1107,11 @@ window.onload = () => {
     setAuthUI();
 
     if (currentUser) {
-      await ensureFamilyVault();
+      const joined = await tryJoinFamily();
+      if (!joined) await ensureFamilyVault();
       await loadLibrary();
-    } else {
+    }
+    else {
       familyId = null;
       myLibrary = loadLocalFallback();
       populateCategoryFilter();
