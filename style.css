@@ -398,3 +398,14 @@ body{
   color:var(--text);
   font-weight:700;
 }
+
+.auth-actions{
+  align-items:stretch;
+}
+
+.auth-secondary{
+  height:60px;   /* force same height as login */
+}
+.auth-secondary{
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+}
