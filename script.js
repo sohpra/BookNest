@@ -882,6 +882,7 @@ function renderLibrary(list) {
     li.append(img, info);
     ul.appendChild(li);
   });
+  populateCategoryFilter();
 }
 
 
