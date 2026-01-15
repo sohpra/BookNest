@@ -465,17 +465,26 @@ body{
 /* Modern delete */
 .delete-btn{
   position:absolute;
-  top:12px;
-  right:12px;
-  width:34px;
-  height:34px;
+  top:14px;
+  right:14px;
+  width:38px;
+  height:38px;
   border-radius:50%;
-  border:none;
-  background:rgba(255,255,255,.06);
-  color:var(--muted);
-  font-size:18px;
+  background:linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.14);
+  color:var(--danger);
+  font-size:20px;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
 }
 .delete-btn:hover{
-  background:rgba(255,92,122,.15);
-  color:var(--danger);
+  background:rgba(255,92,122,.25);
+}
+
+.status-flag.read{
+  background:rgba(0,210,120,.18);
+  color:#38ef9d;
+}
+.status-flag.unread{
+  background:rgba(255,255,255,.08);
+  color:var(--muted);
 }

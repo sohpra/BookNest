@@ -865,7 +865,9 @@ function renderLibrary(list) {
     // Format badge
     const fmt = document.createElement("span");
     fmt.className = `format-badge ${b.format === "ebook" ? "ebook" : "physical"}`;
-    fmt.textContent = b.format === "ebook" ? "E-Book" : "Physical";
+    fmt.textContent = b.format === "ebook" ? "📱" : "📕";
+    fmt.title = b.format === "ebook" ? "E-Book" : "Physical book";
+
 
     badges.append(flag, vis, fmt);
 
