@@ -594,3 +594,14 @@ body{
 .book-item{
   outline:1px solid transparent;
 }
+
+@supports (padding: env(safe-area-inset-top)) {
+  body{
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+body{
+  background-clip: padding-box;
+}
+
