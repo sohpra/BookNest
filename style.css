@@ -712,3 +712,56 @@ body{
 body{
   overflow-x: hidden;
 }
+
+.home-logo{
+  width:140px;
+  margin-bottom:20px;
+}
+/* ===== Modern Home UI ===== */
+
+.home-stats-card.modern{
+  display:grid;
+  gap:16px;
+  padding:22px;
+  border-radius:28px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(28px);
+}
+
+.stat-pill{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  padding:18px 20px;
+  border-radius:18px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.stat-number{
+  font-size:34px;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+
+/* Frosted glass buttons */
+
+.home-primary.frosted,
+.home-secondary-full.frosted{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(24px);
+  color:white;
+  box-shadow:0 14px 40px rgba(0,0,0,.45);
+}
+.home-secondary-full{
+  margin-bottom:26px;
+}

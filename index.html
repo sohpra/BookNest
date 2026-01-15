@@ -92,34 +92,34 @@
 
 
 
-    <div class="home-stats-card">
-      <div class="stat-line">
-        <span>📚</span>
-        <strong id="stat-count">0</strong>
-        <label>Total Books</label>
+    <div class="home-stats-card modern">
+
+      <div class="stat-pill">
+        <div class="stat-number" id="stat-count">0</div>
+        <div class="stat-label">Total Books</div>
       </div>
-      <div class="stat-line">
-        <span>📖</span>
-        <strong id="stat-read">0</strong>
-        <label>Read</label>
+
+      <div class="stat-pill">
+        <div class="stat-number" id="stat-read">0</div>
+        <div class="stat-label">Read</div>
       </div>
-      <div class="stat-line">
-        <span>🏁</span>
-        <strong id="stat-unread">0</strong>
-        <label>To Read</label>
+
+      <div class="stat-pill">
+        <div class="stat-number" id="stat-unread">0</div>
+        <div class="stat-label">To Read</div>
       </div>
+
     </div>
 
-    <!-- Primary Row -->
     <div class="home-primary-row">
-      <button onclick="showView('view-scanner')" class="home-primary ghost">＋ Add Book</button>
-      <button onclick="showView('view-library')" class="home-primary ghost">📂 View Library</button>
+      <button onclick="showView('view-scanner')" class="home-primary frosted">Add Book</button>
+      <button onclick="showView('view-library')" class="home-primary frosted">View Library</button>
     </div>
 
-    <!-- Secondary -->
-    <button onclick="copyInviteLink()" class="home-secondary-full ghost">
-      👪 Invite Family
+    <button onclick="copyInviteLink()" class="home-secondary-full frosted">
+      Invite Family Member
     </button>
+
 
     <p id="loginHint" class="home-hint" style="display:none;">
       Log in to sync your family library.
