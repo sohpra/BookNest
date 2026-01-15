@@ -799,3 +799,29 @@ body{
   backdrop-filter:blur(22px);
   color:white;
 }
+/* Force both auth buttons into same CTA system */
+
+.auth-actions{
+  display:grid !important;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.auth-actions button{
+  height:62px;
+  border-radius:26px;
+  font-size:17px;
+  font-weight:700;
+}
+
+/* Make both visually equal weight */
+
+.auth-primary{
+  box-shadow:0 18px 48px rgba(0,210,211,.35);
+}
+
+.auth-secondary{
+  background:linear-gradient(135deg,#1a2236,#242d4a);
+  border:1px solid rgba(255,255,255,.18);
+  color:white;
+}
