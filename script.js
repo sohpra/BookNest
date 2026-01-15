@@ -882,7 +882,6 @@ function renderLibrary(list) {
     li.append(img, info);
     ul.appendChild(li);
   });
-  populateCategoryFilter();
 }
 
 
@@ -972,14 +971,20 @@ function updateHomeStats() {
 }
 
 window.populateCategoryFilter = function populateCategoryFilter() {
-  const select = $("categoryFilter");
+  const select = $("filterCategory");
   if (!select) return;
 
-  const cats = [...new Set(myLibrary.map((b) => b.category).filter(Boolean))].sort();
+  const current = select.value || "all";
+
+  const cats = [...new Set(myLibrary.map(b => b.category).filter(Boolean))].sort();
+
   select.innerHTML =
     `<option value="all">All categories</option>` +
-    cats.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+
+  select.value = cats.includes(current) ? current : "all";
 };
+
 
 function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, (m) => ({
