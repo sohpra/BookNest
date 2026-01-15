@@ -501,3 +501,92 @@ body{
   will-change:transform;
   transform:translateZ(0);
 }
+
+.chip{
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:11px;
+  letter-spacing:.12em;
+  font-weight:700;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.16);
+  color:var(--muted);
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.chip.on{
+  background:rgba(0,210,120,.18);
+  color:#38ef9d;
+  border-color:rgba(0,210,120,.35);
+}
+
+.chip.off{
+  background:rgba(255,255,255,.04);
+  color:var(--muted);
+}
+
+.chip.subtle{
+  opacity:.75;
+}
+
+.chip.danger{
+  color:rgba(255,92,122,.65);
+  border-color:rgba(255,92,122,.25);
+}
+
+/* Kill iOS ghost scroll seams */
+.book-item{
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+  isolation: isolate;
+}
+
+/* Prevent background seam bleeding */
+body{
+  overflow-x:hidden;
+}
+
+/* Safari blur tiling fix */
+.book-item::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:inherit;
+  pointer-events:none;
+  z-index:-1;
+}
+
+/* Force all glass cards into single composite plane */
+.book-item{
+  position: relative;
+  transform: translate3d(0,0,0);
+  backface-visibility: hidden;
+  will-change: transform;
+  contain: paint;
+  isolation: isolate;
+}
+
+/* Prevent gradient layer bleed */
+body{
+  overflow-x:hidden;
+}
+
+/* Prevent subpixel background seams */
+.book-item::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius:inherit;
+  background:inherit;
+  pointer-events:none;
+  z-index:-1;
+}
+
+/* Chromium tile seam eliminator */
+.book-item{
+  outline:1px solid transparent;
+}

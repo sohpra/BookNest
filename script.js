@@ -850,35 +850,36 @@ function renderLibrary(list) {
     const badges = document.createElement("div");
     badges.className = "book-badges";
 
-    // Read status
-    const flag = document.createElement("span");
-    flag.className = `status-flag ${b.read ? "read" : "unread"}`;
-    flag.textContent = b.read ? "Read" : "Unread";
-    flag.onclick = () => toggleRead(b.bookId);
+    /* ───────── Unified Chip System ───────── */
 
-    // Visibility
-    const vis = document.createElement("span");
-    vis.className = "status-flag";
-    vis.textContent = b.visibility === "private" ? "Private" : "Shared";
-    vis.onclick = () => setVisibility(b.bookId, b.visibility === "private" ? "shared" : "private");
+    // Read / Unread
+    const readChip = document.createElement("span");
+    readChip.className = `chip ${b.read ? "on" : "off"}`;
+    readChip.textContent = b.read ? "READ" : "UNREAD";
+    readChip.onclick = () => toggleRead(b.bookId);
 
-    // Format badge
-    const fmt = document.createElement("span");
-    fmt.className = `format-badge ${b.format === "ebook" ? "ebook" : "physical"}`;
-    fmt.textContent = b.format === "ebook" ? "E" : "P";
-    fmt.classList.add("format-glyph");
+    // Shared / Private
+    const visChip = document.createElement("span");
+    visChip.className = "chip";
+    visChip.textContent = b.visibility === "private" ? "PRIVATE" : "SHARED";
+    visChip.onclick = () =>
+      setVisibility(b.bookId, b.visibility === "private" ? "shared" : "private");
 
+    // Format (Print / E-book)
+    const fmtChip = document.createElement("span");
+    fmtChip.className = "chip subtle";
+    fmtChip.textContent = b.format === "ebook" ? "E-BOOK" : "PRINT";
 
+    // Delete (muted, calm, inline)
+    const delChip = document.createElement("span");
+    delChip.className = "chip subtle danger";
+    delChip.textContent = "DELETE";
+    delChip.onclick = () => deleteBook(b.bookId);
 
-    badges.append(flag, vis, fmt);
-
-    const del = document.createElement("button");
-    del.className = "delete-btn";
-    del.textContent = "DEL";
-    del.onclick = () => deleteBook(b.bookId);
+    badges.append(readChip, visChip, fmtChip, delChip);
 
     info.append(title, author, category, badges);
-    li.append(img, info, del);
+    li.append(img, info);
     ul.appendChild(li);
   });
 }
