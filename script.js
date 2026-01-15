@@ -840,38 +840,46 @@ function renderLibrary(list) {
     title.textContent = b.title || "Unknown title";
 
     const author = document.createElement("div");
-    author.style.fontSize = ".85rem";
-    author.style.opacity = ".7";
+    author.className = "book-author";
     author.textContent = b.author || "";
 
     const category = document.createElement("div");
-    category.style.fontSize = ".7rem";
-    category.style.opacity = ".55";
+    category.className = "book-category";
     category.textContent = "📚 " + (b.category || "Uncategorised");
 
+    const badges = document.createElement("div");
+    badges.className = "book-badges";
+
+    // Read status
     const flag = document.createElement("span");
     flag.className = `status-flag ${b.read ? "read" : "unread"}`;
-    flag.textContent = b.read ? "✅ Read" : "📖 Unread";
+    flag.textContent = b.read ? "Read" : "Unread";
     flag.onclick = () => toggleRead(b.bookId);
 
-    // visibility toggle
+    // Visibility
     const vis = document.createElement("span");
     vis.className = "status-flag";
-    vis.style.marginLeft = "10px";
-    vis.style.opacity = ".9";
-    vis.textContent = b.visibility === "private" ? "🔒 Private" : "👪 Shared";
+    vis.textContent = b.visibility === "private" ? "Private" : "Shared";
     vis.onclick = () => setVisibility(b.bookId, b.visibility === "private" ? "shared" : "private");
+
+    // Format badge
+    const fmt = document.createElement("span");
+    fmt.className = `format-badge ${b.format === "ebook" ? "ebook" : "physical"}`;
+    fmt.textContent = b.format === "ebook" ? "E-Book" : "Physical";
+
+    badges.append(flag, vis, fmt);
 
     const del = document.createElement("button");
     del.className = "delete-btn";
-    del.textContent = "🗑️";
+    del.innerHTML = "✕";
     del.onclick = () => deleteBook(b.bookId);
 
-    info.append(title, author, category, flag, vis);
+    info.append(title, author, category, badges);
     li.append(img, info, del);
     ul.appendChild(li);
   });
 }
+
 
 /* ===================== UTIL ===================== */
 function showToast(msg, color) {

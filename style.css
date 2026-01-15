@@ -421,3 +421,61 @@ body{
   align-items:center;
   justify-content:center;
 }
+/* ===== Library polish ===== */
+
+.book-item{
+  align-items:flex-start;
+  position:relative;
+}
+
+.book-author{
+  font-size:.85rem;
+  opacity:.7;
+}
+
+.book-category{
+  font-size:.7rem;
+  opacity:.55;
+}
+
+.book-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+
+.format-badge{
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:700;
+}
+
+.format-badge.physical{
+  background:rgba(255,159,67,.18);
+  color:#ffb560;
+}
+
+.format-badge.ebook{
+  background:rgba(0,210,211,.18);
+  color:#00d2d3;
+}
+
+/* Modern delete */
+.delete-btn{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  border:none;
+  background:rgba(255,255,255,.06);
+  color:var(--muted);
+  font-size:18px;
+}
+.delete-btn:hover{
+  background:rgba(255,92,122,.15);
+  color:var(--danger);
+}
