@@ -19,12 +19,16 @@ body{
   margin:0;
   font-family:var(--font);
   color:var(--text);
+
+  /* Flattened, seam-safe gradient */
   background:
-    radial-gradient(1000px 500px at 15% -10%, rgba(108,92,231,.35), transparent 60%),
-    radial-gradient(900px 500px at 90% 0%, rgba(0,210,211,.25), transparent 55%),
-    radial-gradient(700px 500px at 50% 110%, rgba(255,159,67,.15), transparent 55%),
-    var(--bg);
+    linear-gradient(180deg,#0f1020 0%, #141a2c 40%, #1a2236 70%, #101428 100%);
 }
+
+html, body{
+  background-attachment: fixed;
+}
+
 
 /* AUTH BAR */
 .auth-bar{
