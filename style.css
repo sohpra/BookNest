@@ -204,3 +204,46 @@ body{
   background:rgba(20,22,45,.92);
   padding:20px;
 }
+
+/* ==== FINAL HOME POLISH ==== */
+
+/* Logo boost */
+.home-logo{
+  width:96px;
+  margin-bottom:16px;
+}
+
+/* Two equal CTAs */
+.home-primary-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:26px;
+}
+.home-primary-row button{
+  height:56px;
+  border-radius:20px;
+  font-weight:800;
+}
+
+/* Invite button */
+.home-secondary-full{
+  width:100%;
+  margin-top:14px;
+  height:52px;
+  border-radius:18px;
+  opacity:.85;
+}
+
+/* Auth bar one-line fix */
+.auth-bar{
+  flex-wrap:nowrap;
+}
+.auth-left,.auth-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.auth-right button{
+  white-space:nowrap;
+}

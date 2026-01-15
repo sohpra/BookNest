@@ -101,18 +101,21 @@
       </div>
     </div>
 
-    <button onclick="showView('view-scanner')" class="primary home-primary">
-      ＋ Add Book
-    </button>
-
-    <div class="home-secondary">
-      <button onclick="showView('view-library')" class="ghost">📂 View Library</button>
-      <button onclick="copyInviteLink()" class="ghost">👪 Invite Family</button>
+    <!-- Primary Row -->
+    <div class="home-primary-row">
+      <button onclick="showView('view-scanner')" class="home-primary ghost">＋ Add Book</button>
+      <button onclick="showView('view-library')" class="home-primary ghost">📂 View Library</button>
     </div>
+
+    <!-- Secondary -->
+    <button onclick="copyInviteLink()" class="home-secondary-full ghost">
+      👪 Invite Family
+    </button>
 
     <p id="loginHint" class="home-hint" style="display:none;">
       Log in to sync your family library.
     </p>
+
   </div>
 </div>
 
