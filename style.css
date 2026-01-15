@@ -774,3 +774,28 @@ body{
   width:170px;
   margin-bottom:26px;
 }
+/* ===== Auth CTA Row Fix ===== */
+
+.auth-actions{
+  display:flex !important;
+  gap:14px;
+}
+
+.auth-actions button{
+  flex:1;
+  height:60px;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+}
+
+/* Secondary button becomes frosted glass */
+
+.auth-secondary{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(22px);
+  color:white;
+}
