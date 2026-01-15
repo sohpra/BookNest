@@ -201,3 +201,77 @@ body{
   background:rgba(20,22,45,.92);
   padding:20px;
 }
+
+/* ==== NEW HOME UI PATCH ==== */
+
+.home-shell{
+  max-width:420px;
+  margin:0 auto;
+  padding:42px 6px 0;
+  text-align:center;
+}
+
+.home-header h1{
+  margin:0;
+  font-size:38px;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+.home-header p{
+  color:var(--muted);
+  font-size:14px;
+  margin:6px 0 26px;
+}
+
+/* Stats cards */
+.home-cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.home-card{
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  padding:18px 8px;
+  box-shadow:var(--shadow);
+}
+.home-card span{font-size:20px}
+.home-card strong{
+  display:block;
+  font-size:28px;
+  margin:8px 0 2px;
+}
+.home-card small{
+  color:var(--muted);
+  font-size:12px;
+}
+
+/* Buttons */
+.home-actions-new{
+  display:grid;
+  gap:14px;
+  margin-top:26px;
+}
+.home-actions-new button{
+  height:56px;
+  border-radius:18px;
+  font-size:16px;
+  font-weight:700;
+  border:1px solid var(--border);
+}
+.home-actions-new .primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:white;
+  box-shadow:0 20px 60px rgba(0,210,211,.35);
+}
+.home-actions-new .ghost{
+  background:rgba(255,255,255,.06);
+}
+
+/* Hint */
+.home-hint{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:16px;
+}

@@ -74,35 +74,42 @@
 </div>
 
 <!-- HOME -->
-<div id="view-home" class="view">
-  <div class="welcome-card">
-    <h1 class="app-title">
-      <img src="./logo.png" class="inline-logo force-big">
-      BookNest
-    </h1>
+<div id="view-home" class="view home">
 
+  <header class="hero">
+    <h1>BookNest</h1>
+    <p>Your family’s beautiful shared library</p>
+  </header>
 
-
-    <p class="tagline">Your personal library — beautifully organised.</p>
-
-    <div class="stat-row">
-      <div class="stat"><strong id="stat-count">0</strong><span>Books</span></div>
-      <div class="stat"><strong id="stat-read">0</strong><span>Read</span></div>
-      <div class="stat"><strong id="stat-unread">0</strong><span>Unread</span></div>
+  <div class="stats">
+    <div class="stat-card">
+      <span>📚</span>
+      <strong id="stat-count">0</strong>
+      <small>Total Books</small>
     </div>
-
-    <button onclick="showView('view-scanner')" class="menu-btn primary">➕ Add New Book</button>
-    <button onclick="showView('view-library')" class="menu-btn secondary">📂 View Library</button>
-    <button onclick="copyInviteLink()" class="menu-btn ghost">
-      👪 Invite Family Member
-    </button>
-
-
-    <p class="hint" id="loginHint" style="display:none;">
-      Log in to save your library privately and sync across devices.
-    </p>
+    <div class="stat-card">
+      <span>📖</span>
+      <strong id="stat-read">0</strong>
+      <small>Read</small>
+    </div>
+    <div class="stat-card">
+      <span>🏁</span>
+      <strong id="stat-unread">0</strong>
+      <small>To Read</small>
+    </div>
   </div>
+
+  <div class="actions">
+    <button onclick="showView('view-scanner')" class="primary">＋ Add Book</button>
+    <button onclick="showView('view-library')" class="ghost">📂 View Library</button>
+    <button onclick="copyInviteLink()" class="ghost">👪 Invite Family</button>
+  </div>
+
+  <p class="hint" id="loginHint" style="display:none;">
+    Log in to sync your library across devices.
+  </p>
 </div>
+
 
 <!-- SCANNER -->
 <div id="view-scanner" class="view">
