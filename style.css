@@ -465,19 +465,19 @@ body{
 /* Modern delete */
 .delete-btn{
   position:absolute;
-  top:14px;
-  right:14px;
-  width:38px;
-  height:38px;
-  border-radius:50%;
-  background:linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
-  border:1px solid rgba(255,255,255,.14);
-  color:var(--danger);
-  font-size:20px;
-  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  top:16px;
+  right:16px;
+  padding:6px 14px;
+  border-radius:999px;
+  background:rgba(255,92,122,.12);
+  border:1px solid rgba(255,92,122,.35);
+  color:#ff5c7a;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.08em;
 }
 .delete-btn:hover{
-  background:rgba(255,92,122,.25);
+  background:rgba(255,92,122,.22);
 }
 
 .status-flag.read{
@@ -487,4 +487,17 @@ body{
 .status-flag.unread{
   background:rgba(255,255,255,.08);
   color:var(--muted);
+}
+.format-glyph{
+  font-size:10px;
+  letter-spacing:.18em;
+  padding:4px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.16);
+  color:var(--muted);
+}
+.book-item{
+  will-change:transform;
+  transform:translateZ(0);
 }

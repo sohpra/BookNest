@@ -865,15 +865,16 @@ function renderLibrary(list) {
     // Format badge
     const fmt = document.createElement("span");
     fmt.className = `format-badge ${b.format === "ebook" ? "ebook" : "physical"}`;
-    fmt.textContent = b.format === "ebook" ? "📱" : "📕";
-    fmt.title = b.format === "ebook" ? "E-Book" : "Physical book";
+    fmt.textContent = b.format === "ebook" ? "E-BOOK" : "PRINT";
+    fmt.classList.add("format-glyph");
+
 
 
     badges.append(flag, vis, fmt);
 
     const del = document.createElement("button");
     del.className = "delete-btn";
-    del.innerHTML = "✕";
+    del.textContent = "DELETE";
     del.onclick = () => deleteBook(b.bookId);
 
     info.append(title, author, category, badges);
