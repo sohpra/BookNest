@@ -971,7 +971,7 @@ function updateHomeStats() {
 }
 
 window.populateCategoryFilter = function populateCategoryFilter() {
-  const select = $("filterCategory");
+  const select = $("categoryFilter");
   if (!select) return;
 
   const cats = [...new Set(myLibrary.map((b) => b.category).filter(Boolean))].sort();
