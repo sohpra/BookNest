@@ -247,3 +247,33 @@ body{
 .auth-right button{
   white-space:nowrap;
 }
+
+/* ===== Mobile fold fit pass ===== */
+@media (max-width: 430px){
+  .home-shell{
+    padding-top:30px;
+  }
+
+  .home-header p{
+    margin-bottom:18px;
+  }
+
+  .home-primary-row{
+    margin-top:20px;
+  }
+
+  .home-secondary-full{
+    margin-top:10px;
+  }
+}
+.home-header.inline{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+}
+
+.home-logo{
+  width:110px;
+  margin-bottom:0;
+}
