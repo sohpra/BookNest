@@ -277,3 +277,13 @@ body{
   width:110px;
   margin-bottom:0;
 }
+.home-header.editorial{
+  text-align:center;
+}
+.home-header.editorial .home-logo{
+  width:108px;
+  margin:0 auto 12px;
+}
+.home-header.editorial h1{
+  font-size:38px;
+}
