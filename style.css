@@ -825,3 +825,36 @@ body{
   border:1px solid rgba(255,255,255,.18);
   color:white;
 }
+/* ===== Modern Auth Sheet ===== */
+
+.modern-auth{
+  padding:28px 22px 26px;
+  border-radius:30px;
+  max-width:420px;
+}
+
+.modern-auth-fields{
+  display:grid;
+  gap:16px;
+  margin:26px 0 24px;
+}
+
+.modern-auth-input{
+  height:56px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.18);
+  color:white;
+  padding:0 18px;
+}
+
+.modern-auth-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.modern-auth-close{
+  margin-top:22px;
+  opacity:.6;
+}

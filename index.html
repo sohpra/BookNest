@@ -52,32 +52,29 @@
 
 <!-- AUTH MODAL -->
 <div id="auth-modal" class="modal-overlay" style="display:none;">
-  <div class="modal-card auth-sheet">
+  <div class="modal-card auth-sheet modern-auth">
 
     <div class="auth-header">
       <h3>Welcome to BookNest</h3>
       <p>Log in or create an account to sync your family library across devices.</p>
     </div>
 
-    <div class="auth-fields">
-      <input id="email" class="auth-input" placeholder="Email address" autocomplete="email">
-      <input id="password" class="auth-input" type="password" placeholder="Password" autocomplete="current-password">
+    <div class="auth-fields modern-auth-fields">
+      <input id="email" class="auth-input modern-auth-input" placeholder="Email address" autocomplete="email">
+      <input id="password" class="auth-input modern-auth-input" type="password" placeholder="Password" autocomplete="current-password">
     </div>
 
-    <!-- Primary actions -->
-    <div class="auth-actions">
-      <button class="auth-primary big" id="loginBtn">Log in</button>
-      <button class="auth-secondary" id="signupBtn">Sign up</button>
+    <div class="auth-actions modern-auth-actions">
+      <button class="auth-primary big">Log in</button>
+      <button class="auth-secondary">Sign up</button>
     </div>
 
-    <!-- Close -->
-    <button class="auth-close" id="closeAuthBtn">Close</button>
-
-    <!-- Errors -->
+    <button class="auth-close modern-auth-close">Close</button>
     <div id="authError" class="auth-error"></div>
 
   </div>
 </div>
+
 
 
 <!-- HOME -->
