@@ -149,9 +149,10 @@
 </div>
 
 <!-- LIBRARY -->
+<!-- LIBRARY -->
 <div id="view-library" class="view">
   <div class="library-header">
-    <button class="back-btn">← Back</button>
+    <button class="back-btn" onclick="showView('view-home')">← Back</button>
 
     <h1 class="library-title">Family Library</h1>
 
@@ -159,26 +160,25 @@
 
       <div class="glass-input">
         <span class="glass-icon">🔍</span>
-        <input id="searchInput" placeholder="Search your books…">
+        <input id="searchBox" placeholder="Search your books…">
       </div>
 
       <div class="glass-row">
-        <select id="readFilter" class="glass-select">
+        <select id="filterRead" class="glass-select">
           <option value="all">All</option>
           <option value="read">Read</option>
           <option value="unread">Unread</option>
         </select>
 
-        <select id="categoryFilter" class="glass-select">
+        <select id="filterCategory" class="glass-select">
           <option value="all">All categories</option>
         </select>
 
-        <select id="sortSelect" class="glass-select">
+        <select id="sortBy" class="glass-select">
           <option value="title">Sort: Title</option>
           <option value="author">Sort: Author</option>
         </select>
       </div>
-
 
       <button id="syncBtn" class="sync-ghost">↻ Sync</button>
 
@@ -186,6 +186,7 @@
   </div>
   <ul id="book-list" class="library-list"></ul>
 </div>
+
 
 <!-- READ MODAL -->
 <div id="read-modal" class="modal-overlay" style="display:none;">

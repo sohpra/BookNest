@@ -1064,10 +1064,25 @@ window.copyInviteLink = function copyInviteLink() {
   });
 };
 
+function bindLibraryControls() {
+  const search = $("searchBox");
+  const read = $("filterRead");
+  const cat = $("filterCategory");
+  const sort = $("sortBy");
+  const sync = $("syncBtn");
+
+  if (search) search.oninput = applyFilters;
+  if (read) read.onchange = applyFilters;
+  if (cat) cat.onchange = applyFilters;
+  if (sort) sort.onchange = applyFilters;
+  if (sync) sync.onclick = loadLibrary;
+}
 
 
 window.onload = () => {
   bindAuthModal();
+  bindLibraryControls();
+
 
   // render instantly (offline fallback)
   myLibrary = loadLocalFallback();
