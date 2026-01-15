@@ -845,7 +845,7 @@ function renderLibrary(list) {
 
     const category = document.createElement("div");
     category.className = "book-category";
-    category.textContent = "📚 " + (b.category || "Uncategorised");
+    category.textContent = (b.category || "Uncategorised");
 
     const badges = document.createElement("div");
     badges.className = "book-badges";
