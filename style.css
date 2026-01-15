@@ -682,3 +682,10 @@ body{
   position:relative;
   z-index:2;
 }
+.library-header{
+  height:auto !important;
+  min-height:unset !important;
+}
+#book-list{
+  margin-top:22px;
+}
