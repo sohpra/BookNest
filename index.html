@@ -150,34 +150,33 @@
 
 <!-- LIBRARY -->
 <div id="view-library" class="view">
-  <div class="header-row">
-    <button class="back-btn" onclick="showView('view-home')">← Back</button>
-    <h2 style="flex-grow:1;margin:0 10px;">My Library</h2>
-    <button class="sync-btn" onclick="loadLibrary()">🔄 Sync</button>
+  <div class="library-header">
+    <button class="back-btn">← Back</button>
+
+    <h1 class="library-title">Family Library</h1>
+
+    <div class="library-controls">
+
+      <div class="glass-input">
+        <span class="glass-icon">🔍</span>
+        <input id="searchInput" placeholder="Search your books…">
+      </div>
+
+      <div class="glass-row">
+        <select id="categoryFilter" class="glass-select">
+          <option value="all">All categories</option>
+        </select>
+
+        <select id="sortSelect" class="glass-select">
+          <option value="title">Sort: Title</option>
+          <option value="author">Sort: Author</option>
+        </select>
+      </div>
+
+      <button id="syncBtn" class="sync-ghost">↻ Sync</button>
+
+    </div>
   </div>
-
-  <div class="library-tools">
-    <input id="searchBox" placeholder="🔍 Search..." oninput="applyFilters()">
-
-    <select id="filterCategory" onchange="applyFilters()">
-      <option value="all">All categories</option>
-    </select>
-
-    <select id="filterRead" onchange="applyFilters()">
-      <option value="all">All</option>
-      <option value="read">Read</option>
-      <option value="unread">Unread</option>
-    </select>
-
-    <select id="sortBy" onchange="applyFilters()">
-      <option value="title">Sort: Title</option>
-      <option value="author">Sort: Author</option>
-      <option value="category">Sort: Category</option>
-    </select>
-  </div>
-
-  <ul id="book-list"></ul>
-</div>
 
 <!-- READ MODAL -->
 <div id="read-modal" class="modal-overlay" style="display:none;">
