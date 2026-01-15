@@ -731,26 +731,25 @@ body{
 
 .stat-pill{
   display:flex;
-  align-items:baseline;
+  align-items:center;
   justify-content:space-between;
-  padding:18px 20px;
+  padding:14px 18px;
   border-radius:18px;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.12);
 }
 
-.stat-number{
-  font-size:34px;
-  font-weight:800;
-  letter-spacing:-.02em;
+.stat-label{
+  font-size:12px;
+  letter-spacing:.18em;
+  color:var(--muted);
 }
 
-.stat-label{
-  color:var(--muted);
-  font-size:13px;
-  text-transform:uppercase;
-  letter-spacing:.12em;
+.stat-number{
+  font-size:26px;
+  font-weight:800;
 }
+
 
 /* Frosted glass buttons */
 
@@ -763,5 +762,15 @@ body{
   box-shadow:0 14px 40px rgba(0,0,0,.45);
 }
 .home-secondary-full{
+  margin-bottom:26px;
+}
+
+.home-secondary-full{
+  margin-top:18px;
+  margin-bottom:60px; /* pulls it above Safari chrome */
+}
+
+.home-logo{
+  width:170px;
   margin-bottom:26px;
 }
