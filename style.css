@@ -674,3 +674,11 @@ body{
   color:rgba(255,255,255,.55);
   font-size:13px;
 }
+.library-header{
+  position:relative;
+  z-index:1;
+}
+#book-list{
+  position:relative;
+  z-index:2;
+}
