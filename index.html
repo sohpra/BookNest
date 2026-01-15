@@ -74,41 +74,48 @@
 </div>
 
 <!-- HOME -->
-<div id="view-home" class="view home">
+<div id="view-home" class="view active">
+  <div class="home-shell">
 
-  <header class="hero">
-    <h1>BookNest</h1>
-    <p>Your family’s beautiful shared library</p>
-  </header>
+    <header class="home-header">
+      <img src="./logo.png" class="home-logo">
+      <h1>BookNest</h1>
+      <p>Your family’s shared reading library</p>
+    </header>
 
-  <div class="stats">
-    <div class="stat-card">
-      <span>📚</span>
-      <strong id="stat-count">0</strong>
-      <small>Total Books</small>
+    <div class="home-stats-card">
+      <div class="stat-line">
+        <span>📚</span>
+        <strong id="stat-count">0</strong>
+        <label>Total Books</label>
+      </div>
+      <div class="stat-line">
+        <span>📖</span>
+        <strong id="stat-read">0</strong>
+        <label>Read</label>
+      </div>
+      <div class="stat-line">
+        <span>🏁</span>
+        <strong id="stat-unread">0</strong>
+        <label>To Read</label>
+      </div>
     </div>
-    <div class="stat-card">
-      <span>📖</span>
-      <strong id="stat-read">0</strong>
-      <small>Read</small>
+
+    <button onclick="showView('view-scanner')" class="primary home-primary">
+      ＋ Add Book
+    </button>
+
+    <div class="home-secondary">
+      <button onclick="showView('view-library')" class="ghost">📂 View Library</button>
+      <button onclick="copyInviteLink()" class="ghost">👪 Invite Family</button>
     </div>
-    <div class="stat-card">
-      <span>🏁</span>
-      <strong id="stat-unread">0</strong>
-      <small>To Read</small>
-    </div>
+
+    <p id="loginHint" class="home-hint" style="display:none;">
+      Log in to sync your family library.
+    </p>
   </div>
-
-  <div class="actions">
-    <button onclick="showView('view-scanner')" class="primary">＋ Add Book</button>
-    <button onclick="showView('view-library')" class="ghost">📂 View Library</button>
-    <button onclick="copyInviteLink()" class="ghost">👪 Invite Family</button>
-  </div>
-
-  <p class="hint" id="loginHint" style="display:none;">
-    Log in to sync your library across devices.
-  </p>
 </div>
+
 
 
 <!-- SCANNER -->
