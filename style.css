@@ -692,3 +692,23 @@ body{
 .library-list{
   padding-top: 20px;
 }
+/* ===== Library stacking fix ===== */
+
+#view-library{
+  position: relative;
+  z-index: 1;
+}
+
+.library-header{
+  position: relative;
+  z-index: 5;
+}
+
+.library-list{
+  position: relative;
+  z-index: 1;
+}
+
+body{
+  overflow-x: hidden;
+}
