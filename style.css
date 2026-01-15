@@ -287,3 +287,69 @@ body{
 .home-header.editorial h1{
   font-size:38px;
 }
+/* ===== AUTH SHEET ===== */
+
+.auth-sheet{
+  width:100%;
+  max-width:420px;
+  border-radius:28px;
+  padding:28px 22px 22px;
+  box-shadow:0 40px 120px rgba(0,0,0,.65);
+  text-align:center;
+}
+
+.auth-header h3{
+  margin:0;
+  font-size:22px;
+}
+.auth-header p{
+  color:var(--muted);
+  font-size:14px;
+  margin:6px 0 22px;
+}
+
+.auth-fields{
+  display:grid;
+  gap:14px;
+}
+.auth-input{
+  height:52px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.08);
+  padding:0 14px;
+  color:var(--text);
+  font-size:15px;
+}
+
+.auth-primary{
+  margin-top:18px;
+  height:56px;
+  border-radius:18px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:white;
+  font-weight:700;
+  border:none;
+}
+
+.auth-switch{
+  background:none;
+  border:none;
+  color:var(--accent2);
+  margin-top:12px;
+  font-size:14px;
+}
+
+.auth-close{
+  margin-top:18px;
+  background:none;
+  border:none;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.auth-error{
+  color:var(--danger);
+  font-size:13px;
+  margin-top:10px;
+}
