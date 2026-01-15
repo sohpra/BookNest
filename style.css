@@ -374,3 +374,27 @@ body{
   color:var(--muted);
   font-size:13px;
 }
+
+/* ===== Auth action row ===== */
+
+.auth-actions{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:14px;
+  margin-top:22px;
+}
+
+.auth-primary.big{
+  height:60px;
+  font-size:17px;
+  border-radius:22px;
+}
+
+.auth-secondary{
+  height:60px;
+  border-radius:22px;
+  background:rgba(255,255,255,.08);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-weight:700;
+}

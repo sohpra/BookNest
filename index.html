@@ -56,7 +56,7 @@
 
     <div class="auth-header">
       <h3>Welcome to BookNest</h3>
-      <p>Create an account to sync your family library across devices.</p>
+      <p>Log in or create an account to sync your family library across devices.</p>
     </div>
 
     <div class="auth-fields">
@@ -64,17 +64,21 @@
       <input id="password" class="auth-input" type="password" placeholder="Password" autocomplete="current-password">
     </div>
 
-    <button class="auth-primary" id="loginBtn">Log in</button>
+    <!-- Primary actions -->
+    <div class="auth-actions">
+      <button class="auth-primary big" id="loginBtn">Log in</button>
+      <button class="auth-secondary" id="signupBtn">Sign up</button>
+    </div>
 
-    <div class="auth-divider"></div>
-
-    <button class="auth-link" id="signupBtn">New here? Create an account</button>
-
+    <!-- Close -->
     <button class="auth-close" id="closeAuthBtn">Close</button>
 
+    <!-- Errors -->
     <div id="authError" class="auth-error"></div>
+
   </div>
 </div>
+
 
 <!-- HOME -->
 <div id="view-home" class="view active">
