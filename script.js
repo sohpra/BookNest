@@ -1099,3 +1099,8 @@ window.onload = () => {
   });
 
 };
+
+window.db = db;
+window.doc = doc;
+window.setDoc = setDoc;
+window.serverTimestamp = serverTimestamp;
