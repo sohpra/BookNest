@@ -768,3 +768,80 @@ body.authenticated .home-header p {
   display: grid;
   gap: 12px;
 }
+
+/* ===============================
+   HOME – SINGLE SCREEN LOCK
+   (safe overrides, no refactor)
+   =============================== */
+
+.home-shell {
+  min-height: 100vh;
+  padding-top: 24px;     /* was 42px */
+  padding-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 14px;
+}
+
+/* --- Header compression --- */
+.home-header {
+  margin-bottom: 10px !important;
+}
+
+.home-logo {
+  width: 96px !important;
+  margin-bottom: 8px !important;
+}
+
+.home-header h1 {
+  font-size: 28px !important;
+}
+
+.home-header p {
+  margin-bottom: 12px !important;
+  font-size: 13px;
+}
+
+/* --- Stats / overview card --- */
+.home-stats-card,
+.home-overview-card {
+  padding: 14px 16px !important;
+  margin: 10px 0 !important;
+  gap: 10px !important;
+}
+
+.stat-pill,
+.overview-row {
+  padding: 8px 0 !important;
+}
+
+.stat-number,
+.overview-value {
+  font-size: 20px !important;
+}
+
+/* --- Primary actions --- */
+.home-primary-row,
+.home-actions-stack {
+  margin-top: 12px !important;
+  gap: 12px !important;
+}
+
+/* Force 2-up buttons everywhere */
+.home-primary-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+}
+
+/* Button height control */
+.home-primary,
+.home-secondary-full {
+  height: 50px !important;
+  margin: 0 !important;
+}
+
+/* Kill accidental bottom spacing */
+.home-secondary-full {
+  margin-bottom: 0 !important;
+}
