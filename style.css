@@ -899,3 +899,8 @@ body{
   padding:14px;
   font-weight:700;
 }
+
+.edit-book-card .auth-input{
+  height:56px;
+  border-radius:16px;
+}

@@ -807,20 +807,20 @@ window.openEditBook = function(bookId){
   editingBookId = bookId;
 
   $("edit-cover").src = b.image;
-  $("edit-title").textContent = b.title;
-  $("edit-author").textContent = b.author;
 
-  const select = $("edit-category");
+  $("edit-title-input").value = b.title || "";
+  $("edit-author-input").value = b.author || "";
+  $("edit-category-input").value = b.category || "";
+  $("edit-isbn").value = b.isbn || "";
+
+  // Populate category suggestions
   const cats = [...new Set(myLibrary.map(x => x.category).filter(Boolean))].sort();
-
-  select.innerHTML = cats
-    .map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
-    .join("");
-
-  select.value = b.category;
+  $("category-suggestions").innerHTML =
+    cats.map(c => `<option value="${escapeHtml(c)}"></option>`).join("");
 
   showView("view-edit-book");
 };
+
 
 function askReadStatus(title) {
   return new Promise((res) => {
@@ -1083,21 +1083,32 @@ if (manualBtn) {
 $("saveEditBtn").onclick = async () => {
   if (!editingBookId || !familyId) return;
 
-  const newCat = $("edit-category").value;
+  const newTitle = $("edit-title-input").value.trim() || "Unknown";
+  const newAuthor = $("edit-author-input").value.trim() || "Unknown";
+  const newCategory = $("edit-category-input").value.trim() || "General & Other";
 
   await setDoc(
     doc(db, "families", familyId, "books", editingBookId),
-    { category: newCat },
+    {
+      title: newTitle,
+      author: newAuthor,
+      category: newCategory,
+    },
     { merge: true }
   );
 
   const b = myLibrary.find(x => x.bookId === editingBookId);
-  if (b) b.category = newCat;
+  if (b) {
+    b.title = newTitle;
+    b.author = newAuthor;
+    b.category = newCategory;
+  }
 
   populateCategoryFilter();
   applyFilters();
   showView("view-library");
 };
+
 
 $("deleteEditBtn").onclick = async () => {
   if (!editingBookId) return;

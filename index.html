@@ -186,27 +186,36 @@
 </div>
 
 <!-- EDIT BOOK -->
-<div id="view-edit-book" class="view">
-  <button class="back-btn" onclick="showView('view-library')">← Back</button>
+<div class="edit-book-card">
 
-  <div class="edit-book-card">
+  <img id="edit-cover" class="edit-cover">
 
-    <img id="edit-cover" class="edit-cover">
+  <label class="edit-label">Title</label>
+  <input id="edit-title-input" class="auth-input">
 
-    <h2 id="edit-title"></h2>
-    <p id="edit-author" class="muted"></p>
+  <label class="edit-label">Author</label>
+  <input id="edit-author-input" class="auth-input">
 
-    <label class="edit-label">Category</label>
-    <select id="edit-category" class="glass-select"></select>
+  <label class="edit-label">Category</label>
+  <input
+    id="edit-category-input"
+    class="auth-input"
+    list="category-suggestions"
+    placeholder="Type or choose a category">
 
-    <button id="saveEditBtn" class="home-primary frosted">Save Changes</button>
+  <datalist id="category-suggestions"></datalist>
 
-    <button id="deleteEditBtn" class="danger-outline">
-      Delete Book
-    </button>
+  <label class="edit-label">ISBN</label>
+  <input id="edit-isbn" class="auth-input" readonly>
 
-  </div>
+  <button id="saveEditBtn" class="home-primary frosted">Save Changes</button>
+
+  <button id="deleteEditBtn" class="danger-outline">
+    Delete Book
+  </button>
+
 </div>
+
 
 <!-- READ MODAL -->
 <div id="read-modal" class="modal-overlay" style="display:none;">
