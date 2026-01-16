@@ -38,8 +38,6 @@ const firebaseConfig = {
   appId: "1:210559796706:web:c1e50148e6d9f5286ce5bb",
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -83,8 +81,6 @@ onAuthStateChanged(auth, async (user) => {
 
 
 
-const db = getFirestore(app);
-
 /* ===================== CONFIG ===================== */
 const Quagga_CDN = "https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js";
 // Leave as "" to skip Google Books and use OpenLibrary only.
@@ -119,7 +115,7 @@ function getJoinFamilyId() {
 
 /* ===================== URL PARAMS (optional invites) ===================== */
 const params = new URLSearchParams(location.search);
-const JOIN_FAMILY_ID = (params.get("family") || "").trim(); // e.g. ?family=abc123
+const JOIN_FAMILY_ID = (params.get("join") || "").trim(); // e.g. ?join=abc123
 
 /* ===================== FAMILY DATA PATHS ===================== */
 // Index from user -> family
@@ -216,7 +212,7 @@ async function ensureFamilyVault() {
 
   /* ===================== PIN LOGIN ===================== */
 
-async function loginWithPin(pin, name) {
+/* async function loginWithPin(pin, name) {
   if (!familyId) return false;
 
   const q = await getDoc(doc(db, "families", familyId, "pins", pin));
@@ -235,7 +231,7 @@ async function loginWithPin(pin, name) {
 }
 
 /* ===================== FAMILY JOIN LINKS ===================== */
-
+/*
 function getJoinFamilyFromURL() {
   const p = new URLSearchParams(window.location.search);
   return p.get("join");
@@ -296,8 +292,7 @@ async function tryJoinFamily() {
 
   familyId = joinId;
   return true;
-}
-
+}*/
   // 3) Create a new family vault for this parent (v1 behaviour)
   familyId = newId();
 
@@ -1276,39 +1271,7 @@ window.onload = () => {
   // start on home
   showView("view-home");
 
-  onAuthStateChanged(auth, async (user) => {
-    currentUser = user || null;
-    setAuthUI();
-
-    if (currentUser) {
-      const joinId = getJoinFamilyId();
-
-      if (joinId) {
-        familyId = joinId;
-
-        await setDoc(memberRef(joinId, currentUser.uid), {
-          name: currentUser.email || "Member",
-          role: "child",
-          joinedAt: serverTimestamp(),
-        });
-
-        await setDoc(userIndexRef(currentUser.uid), {
-          familyId: joinId,
-          updatedAt: serverTimestamp(),
-        });
-
-        history.replaceState({}, "", location.pathname);
-      }
-
-      await ensureFamilyVault();
-      await loadLibrary();
-    } else {
-      familyId = null;
-      myLibrary = loadLocalFallback();
-      populateCategoryFilter();
-      applyFilters();
-    }
-  });
+  
 
 };
 
