@@ -705,3 +705,66 @@ body.authenticated .home-header p {
   margin-top: 14px;
   gap: 10px;
 }
+
+/* ───────── Home overview card (compact) ───────── */
+
+.home-overview-card {
+  padding: 18px;
+  margin-top: 16px;
+}
+
+.overview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.overview-row + .overview-row {
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.overview-label {
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+
+.overview-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+/* ───────── Home header compaction (logged in) ───────── */
+
+#home-auth-only:not([style*="display: none"]) 
+  ~ .home-header,
+#home-auth-only {
+  margin-top: 0;
+}
+
+.compact-when-auth {
+  padding-top: 16px;
+  padding-bottom: 8px;
+}
+
+.compact-when-auth .home-logo {
+  width: 72px;
+  height: auto;
+  margin-bottom: 6px;
+}
+
+.compact-when-auth h1 {
+  font-size: 1.9rem;
+  margin-bottom: 4px;
+}
+
+.compact-when-auth p {
+  font-size: 0.95rem;
+  opacity: 0.75;
+  margin-bottom: 8px;
+}
+.home-actions-stack {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
