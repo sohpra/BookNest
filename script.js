@@ -796,7 +796,42 @@ window.loadLibrary = async function loadLibrary() {
   }
 };
 
+function setupCategorySuggestions(currentValue = "") {
+  const input = document.getElementById("edit-category");
+  const box = document.getElementById("category-suggestions");
+
+  if (!input || !box) return;
+
+  const categories = [
+    ...new Set(myLibrary.map(b => b.category).filter(Boolean))
+  ].sort();
+
+  function render(filter = "") {
+    box.innerHTML = "";
+
+    categories
+      .filter(c => c.toLowerCase().includes(filter.toLowerCase()))
+      .slice(0, 8)
+      .forEach(c => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = c;
+        btn.onclick = () => {
+          input.value = c;
+          box.innerHTML = "";
+        };
+        box.appendChild(btn);
+      });
+  }
+
+  input.oninput = () => render(input.value);
+
+  // initial render
+  render(currentValue);
+}
+
 /* ===================== UI ===================== */
+
 
 let editingBookId = null;
 
@@ -806,18 +841,24 @@ window.openEditBook = function (bookId) {
 
   editingBookId = bookId;
 
-  const ids = [
-    "edit-cover",
-    "edit-title-input",
-    "edit-author-input",
-    "edit-category",
-    "edit-isbn"
-  ];
+  const cover = document.getElementById("edit-cover");
+  const title = document.getElementById("edit-title-input");
+  const author = document.getElementById("edit-author-input");
+  const category = document.getElementById("edit-category");
+  const isbn = document.getElementById("edit-isbn");
 
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    console.log(id, el);
-  });
+  if (!title || !author || !category || !isbn) {
+    console.error("Edit view missing elements");
+    return;
+  }
+
+  if (cover) cover.src = book.image || "";
+  title.value = book.title || "";
+  author.value = book.author || "";
+  category.value = book.category || "";
+  isbn.value = book.isbn || "";
+
+  setupCategorySuggestions(book.category || "");
 
   showView("view-edit-book");
 };
