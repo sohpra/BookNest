@@ -425,3 +425,10 @@ body{
     font-size:12px;
   }
 }
+/* Prevent auth status overflow on small screens */
+#authStatus{
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

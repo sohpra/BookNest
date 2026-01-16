@@ -302,14 +302,17 @@ function setAuthUI() {
   if (currentUser) {
     status.textContent = `Logged in as ${currentUser.email}`;
     show(logoutBtn, true);
-    openAuthBtn.textContent = "Account";
+    show(openAuthBtn, false); // hide login button entirely
     show(loginHint, false);
-  } else {
+  } 
+  else {
     status.textContent = "Not logged in";
     show(logoutBtn, false);
+    show(openAuthBtn, true);
     openAuthBtn.textContent = "Log in";
     show(loginHint, true);
   }
+
 }
 
 function bindAuthModal() {
