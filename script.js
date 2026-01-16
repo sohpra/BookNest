@@ -58,6 +58,7 @@ onAuthStateChanged(auth, async (user) => {
     // Ensure family + load data
     await ensureFamilyVault();
     await loadLibrary();
+    await updateFamilyMemberCount(); // ← ADD THIS LINE
 
     setHomeAuthState(true);   // ✅ only toggles inner sections
   } else {
@@ -1109,6 +1110,18 @@ function updateHomeStats() {
   if (sc) sc.textContent = total;
   if (sr) sr.textContent = read;
   if (su) su.textContent = total - read;
+}
+
+async function updateFamilyMemberCount() {
+  if (!familyId) return;
+
+  try {
+    const snap = await getDocs(collection(db, "families", familyId, "members"));
+    const el = document.getElementById("stat-members");
+    if (el) el.textContent = snap.size;
+  } catch (e) {
+    console.error("Failed to load family members", e);
+  }
 }
 
 window.populateCategoryFilter = function populateCategoryFilter() {

@@ -671,3 +671,37 @@ body.authenticated .home-header p {
 .home-secondary-full {
   margin-top: 12px; /* reduce vertical stacking gap */
 }
+.home-header.compact-when-auth {
+  padding-bottom: 12px;
+}
+
+.home-header.compact-when-auth h1 {
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+
+.home-header.compact-when-auth p {
+  font-size: 0.95rem;
+  opacity: 0.75;
+}
+.home-overview-card {
+  margin-top: 12px;
+  padding: 16px;
+  gap: 10px;
+}
+
+.overview-row {
+  padding: 10px 0;
+}
+
+.overview-label {
+  font-size: 0.95rem;
+}
+
+.overview-value {
+  font-size: 1.4rem;
+}
+.home-actions-stack {
+  margin-top: 14px;
+  gap: 10px;
+}
