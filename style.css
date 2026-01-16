@@ -404,3 +404,24 @@ body{
   color: #38ef9d;
   border: 1px solid rgba(0,210,120,.35);
 }
+
+/* ===== Auth bar overflow fix (mobile-safe) ===== */
+
+.auth-bar{
+  overflow:hidden;
+}
+
+.auth-bar .pill{
+  max-width: 55%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tighten on very small screens */
+@media (max-width: 390px){
+  .auth-bar .pill{
+    max-width: 48%;
+    font-size:12px;
+  }
+}
