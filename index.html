@@ -200,13 +200,17 @@
     <input id="edit-author-input" class="auth-input">
 
     <label class="edit-label">Category</label>
-    <input
-      id="edit-category-input"
-      class="auth-input"
-      list="category-suggestions"
-      placeholder="Type or choose a category">
+    <label class="edit-label">Category</label>
 
-    <datalist id="category-suggestions"></datalist>
+    <input
+      id="edit-category"
+      class="edit-input"
+      placeholder="Type or choose a category"
+      autocomplete="off"
+    />
+
+    <div id="category-suggestions" class="category-suggestions"></div>
+
 
     <label class="edit-label">ISBN</label>
     <input id="edit-isbn" class="auth-input" readonly>
