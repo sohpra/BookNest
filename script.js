@@ -44,6 +44,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 onAuthStateChanged(auth, async (user) => {
+  // Always land on home first
+  showView("view-home");
+
   if (user) {
     // ─── LOGGED IN ───
     currentUser = user;
@@ -52,13 +55,11 @@ onAuthStateChanged(auth, async (user) => {
     show($("logoutBtn"), true);
     show($("openAuthBtn"), false);
 
-    setHomeAuthState(true);
-
+    // Ensure family + load data
     await ensureFamilyVault();
     await loadLibrary();
 
-    showView("view-home");
-
+    setHomeAuthState(true);   // ✅ only toggles inner sections
   } else {
     // ─── LOGGED OUT ───
     currentUser = null;
@@ -72,11 +73,10 @@ onAuthStateChanged(auth, async (user) => {
     renderLibrary([]);
     updateHomeStats();
 
-    setHomeAuthState(false);
-
-    showView("view-logged-out");
+    setHomeAuthState(false);  // ✅ only toggles inner sections
   }
 });
+
 
 
 
