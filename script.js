@@ -797,6 +797,31 @@ window.loadLibrary = async function loadLibrary() {
 };
 
 /* ===================== UI ===================== */
+
+let editingBookId = null;
+
+window.openEditBook = function(bookId){
+  const b = myLibrary.find(x => x.bookId === bookId);
+  if (!b) return;
+
+  editingBookId = bookId;
+
+  $("edit-cover").src = b.image;
+  $("edit-title").textContent = b.title;
+  $("edit-author").textContent = b.author;
+
+  const select = $("edit-category");
+  const cats = [...new Set(myLibrary.map(x => x.category).filter(Boolean))].sort();
+
+  select.innerHTML = cats
+    .map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`)
+    .join("");
+
+  select.value = b.category;
+
+  showView("view-edit-book");
+};
+
 function askReadStatus(title) {
   return new Promise((res) => {
     const m = $("read-modal");
@@ -871,12 +896,13 @@ function renderLibrary(list) {
     fmtChip.textContent = b.format === "ebook" ? "E-BOOK" : "PRINT";
 
     // Delete (muted, calm, inline)
-    const delChip = document.createElement("span");
-    delChip.className = "chip subtle danger";
-    delChip.textContent = "DELETE";
-    delChip.onclick = () => deleteBook(b.bookId);
+    const editChip = document.createElement("span");
+    editChip.className = "chip subtle";
+    editChip.textContent = "EDIT";
+    editChip.onclick = () => openEditBook(b.bookId);
 
-    badges.append(readChip, visChip, fmtChip, delChip);
+    badges.append(readChip, visChip, fmtChip, editChip);
+
 
     info.append(title, author, category, badges);
     li.append(img, info);
@@ -1053,6 +1079,33 @@ if (manualBtn) {
     if (isbn) handleISBN(isbn.trim());
   };
 }
+
+$("saveEditBtn").onclick = async () => {
+  if (!editingBookId || !familyId) return;
+
+  const newCat = $("edit-category").value;
+
+  await setDoc(
+    doc(db, "families", familyId, "books", editingBookId),
+    { category: newCat },
+    { merge: true }
+  );
+
+  const b = myLibrary.find(x => x.bookId === editingBookId);
+  if (b) b.category = newCat;
+
+  populateCategoryFilter();
+  applyFilters();
+  showView("view-library");
+};
+
+$("deleteEditBtn").onclick = async () => {
+  if (!editingBookId) return;
+  if (!confirm("Delete this book permanently?")) return;
+
+  await deleteBook(editingBookId);
+  showView("view-library");
+};
 
 /* ===================== INIT ===================== */
 window.copyInviteLink = function copyInviteLink() {

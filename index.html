@@ -148,7 +148,6 @@
 </div>
 
 <!-- LIBRARY -->
-<!-- LIBRARY -->
 <div id="view-library" class="view">
   <div class="library-header">
     <button class="back-btn" onclick="showView('view-home')">← Back</button>
@@ -186,6 +185,28 @@
   <ul id="book-list" class="library-list"></ul>
 </div>
 
+<!-- EDIT BOOK -->
+<div id="view-edit-book" class="view">
+  <button class="back-btn" onclick="showView('view-library')">← Back</button>
+
+  <div class="edit-book-card">
+
+    <img id="edit-cover" class="edit-cover">
+
+    <h2 id="edit-title"></h2>
+    <p id="edit-author" class="muted"></p>
+
+    <label class="edit-label">Category</label>
+    <select id="edit-category" class="glass-select"></select>
+
+    <button id="saveEditBtn" class="home-primary frosted">Save Changes</button>
+
+    <button id="deleteEditBtn" class="danger-outline">
+      Delete Book
+    </button>
+
+  </div>
+</div>
 
 <!-- READ MODAL -->
 <div id="read-modal" class="modal-overlay" style="display:none;">
