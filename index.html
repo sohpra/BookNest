@@ -92,43 +92,46 @@
 
     <div id="home-auth-only">
 
-      <div class="home-overview-card frosted">
+  <!-- OVERVIEW CARD -->
+  <div class="home-overview-card">
 
-        <div class="overview-title">Library overview</div>
-
-        <div class="overview-row">
-          <span class="overview-label">Family members</span>
-          <span class="overview-value" id="stat-members">—</span>
-        </div>
-
-        <div class="overview-row">
-          <span class="overview-label">Total books</span>
-          <span class="overview-value" id="stat-count">0</span>
-        </div>
-
-        <div class="overview-row">
-          <span class="overview-label">Read by you</span>
-          <span class="overview-value" id="stat-read">0</span>
-        </div>
-
-        <button
-          onclick="copyInviteLink()"
-          class="home-secondary-full frosted"
-        >
-          Invite family member
-        </button>
-
-      </div>
-
-      <div class="home-primary-row">
-        <button onclick="showView('view-scanner')" class="home-primary frosted">Add Book</button>
-        <button onclick="showView('view-library')" class="home-primary frosted">View Library</button>
-      </div>
-
-      <button onclick="copyInviteLink()" class="home-secondary-full frosted">
-        Invite Family Member
-      </button>
+    <div class="overview-row">
+      <span class="overview-label">Family members</span>
+      <span class="overview-value" id="stat-members">—</span>
     </div>
+
+    <div class="overview-row">
+      <span class="overview-label">Total books</span>
+      <span class="overview-value" id="stat-count">0</span>
+    </div>
+
+    <div class="overview-row">
+      <span class="overview-label">Read by you</span>
+      <span class="overview-value" id="stat-read">0</span>
+    </div>
+
+    <button
+      class="home-secondary-full frosted"
+      onclick="copyInviteLink()"
+    >
+      Invite family member
+    </button>
+
+  </div>
+
+  <!-- PRIMARY ACTIONS (STACKED) -->
+  <div class="home-actions-stack">
+    <button onclick="showView('view-scanner')" class="home-primary frosted">
+      Add Book
+    </button>
+
+    <button onclick="showView('view-library')" class="home-secondary-full frosted">
+      View Library
+    </button>
+  </div>
+
+</div>
+
 
 
     <div id="home-logged-out" style="display:none;">
