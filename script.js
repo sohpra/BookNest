@@ -1133,29 +1133,36 @@ if (manualBtn) {
 $("saveEditBtn").onclick = async () => {
   if (!editingBookId || !familyId) return;
 
-  const newTitle = $("edit-title-input").value.trim() || "Unknown";
-  const newAuthor = $("edit-author-input").value.trim() || "Unknown";
-  const newCategory = $("edit-category-input").value.trim() || "General & Other";
+  const newTitle = $("edit-title-input")?.value.trim() || "Unknown";
+  const newAuthor = $("edit-author-input")?.value.trim() || "Unknown";
+  const newCategory = $("edit-category")?.value.trim() || "General & Other";
 
+  // 1️⃣ Save to Firestore
   await setDoc(
     doc(db, "families", familyId, "books", editingBookId),
     {
       title: newTitle,
       author: newAuthor,
       category: newCategory,
+      updatedAt: serverTimestamp(),
     },
     { merge: true }
   );
 
-  const b = myLibrary.find(x => x.bookId === editingBookId);
-  if (b) {
-    b.title = newTitle;
-    b.author = newAuthor;
-    b.category = newCategory;
+  // 2️⃣ Update local library state
+  const book = myLibrary.find(b => b.bookId === editingBookId);
+  if (book) {
+    book.title = newTitle;
+    book.author = newAuthor;
+    book.category = newCategory;
   }
 
+  // 3️⃣ Refresh UI
+  saveLocalFallback(myLibrary);
   populateCategoryFilter();
   applyFilters();
+
+  // 4️⃣ Go back to library
   showView("view-library");
 };
 
