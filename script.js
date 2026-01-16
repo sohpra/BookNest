@@ -800,26 +800,30 @@ window.loadLibrary = async function loadLibrary() {
 
 let editingBookId = null;
 
-window.openEditBook = function(bookId){
-  const b = myLibrary.find(x => x.bookId === bookId);
-  if (!b) return;
+window.openEditBook = function (bookId) {
+  const book = myLibrary.find(b => b.bookId === bookId);
+  if (!book) return;
 
   editingBookId = bookId;
 
-  $("edit-cover").src = b.image;
+  const cover = document.getElementById("edit-cover");
+  const titleInput = document.getElementById("edit-title-input");
+  const authorInput = document.getElementById("edit-author-input");
+  const categoryInput = document.getElementById("edit-category");
+  const isbnInput = document.getElementById("edit-isbn");
 
-  $("edit-title-input").value = b.title || "";
-  $("edit-author-input").value = b.author || "";
-  $("edit-category-input").value = b.category || "";
-  $("edit-isbn").value = b.isbn || "";
+  if (cover) cover.src = book.image || "";
+  if (titleInput) titleInput.value = book.title || "";
+  if (authorInput) authorInput.value = book.author || "";
+  if (categoryInput) categoryInput.value = book.category || "";
+  if (isbnInput) isbnInput.value = book.isbn || "";
 
-  // Populate category suggestions
-  const cats = [...new Set(myLibrary.map(x => x.category).filter(Boolean))].sort();
-  $("category-suggestions").innerHTML =
-    cats.map(c => `<option value="${escapeHtml(c)}"></option>`).join("");
+  // Setup smart suggestions (must happen AFTER value is set)
+  setupCategorySuggestions(book.category || "");
 
   showView("view-edit-book");
 };
+
 
 
 function askReadStatus(title) {
