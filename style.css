@@ -396,3 +396,11 @@ body{
   color:rgba(255,255,255,.6);
   border:1px dashed rgba(255,255,255,.25);
 }
+
+/* READ state – catch existing markup */
+.status-flag.read,
+.chip.on {
+  background: rgba(0,210,120,.18);
+  color: #38ef9d;
+  border: 1px solid rgba(0,210,120,.35);
+}
