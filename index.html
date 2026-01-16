@@ -76,6 +76,19 @@
   </div>
 </div>
 
+<!-- LOGGED OUT -->
+
+<div id="view-logged-out" class="view">
+  <div class="home-shell">
+    <img src="BookNest_Hero.png" class="home-logo">
+    <h1>BookNest</h1>
+    <p>Your family’s shared reading library</p>
+
+    <button class="home-primary" onclick="openAuthModal()">
+      Log in or Sign up
+    </button>
+  </div>
+</div>
 
 
 <!-- HOME -->
@@ -89,35 +102,37 @@
     </header>
 
 
+    <div id="home-auth-only">
 
-    <div class="home-stats-card modern">
+      <div class="home-stats-card modern">
 
-      <div class="stat-pill">
-        <div class="stat-label">TOTAL BOOKS</div>
-        <div class="stat-number" id="stat-count">0</div>
+        <div class="stat-pill">
+          <div class="stat-label">TOTAL BOOKS</div>
+          <div class="stat-number" id="stat-count">0</div>
+        </div>
+
+        <div class="stat-pill">
+          <div class="stat-label">READ BY YOU</div>
+          <div class="stat-number" id="stat-read">0</div>
+        </div>
+
+        <div class="stat-pill">
+          <div class="stat-label">TO READ</div>
+          <div class="stat-number" id="stat-unread">0</div>
+        </div>
+
+
       </div>
 
-      <div class="stat-pill">
-        <div class="stat-label">READ BY YOU</div>
-        <div class="stat-number" id="stat-read">0</div>
+      <div class="home-primary-row">
+        <button onclick="showView('view-scanner')" class="home-primary frosted">Add Book</button>
+        <button onclick="showView('view-library')" class="home-primary frosted">View Library</button>
       </div>
 
-      <div class="stat-pill">
-        <div class="stat-label">TO READ</div>
-        <div class="stat-number" id="stat-unread">0</div>
-      </div>
-
-
+      <button onclick="copyInviteLink()" class="home-secondary-full frosted">
+        Invite Family Member
+      </button>
     </div>
-
-    <div class="home-primary-row">
-      <button onclick="showView('view-scanner')" class="home-primary frosted">Add Book</button>
-      <button onclick="showView('view-library')" class="home-primary frosted">View Library</button>
-    </div>
-
-    <button onclick="copyInviteLink()" class="home-secondary-full frosted">
-      Invite Family Member
-    </button>
 
 
     <p id="loginHint" class="home-hint" style="display:none;">

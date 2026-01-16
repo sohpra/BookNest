@@ -40,6 +40,49 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // ─── LOGGED IN ───
+    currentUser = user;
+
+    $("authStatus").textContent = `Logged in as ${user.email}`;
+    show($("logoutBtn"), true);
+    show($("openAuthBtn"), false);
+
+    setHomeAuthState(true); // ✅ NEW
+
+    // Ensure family + load data
+    await ensureFamilyVault();
+    await loadLibrary();
+
+    showView("view-home");
+
+  } else {
+    // ─── LOGGED OUT ───
+    currentUser = null;
+    familyId = null;
+    myLibrary = [];
+
+    $("authStatus").textContent = "Not logged in";
+    show($("logoutBtn"), false);
+    show($("openAuthBtn"), true);
+
+    renderLibrary([]);
+    updateHomeStats();
+
+    setHomeAuthState(false); // ✅ NEW
+
+    showView("view-home");
+  }
+});
+
+
+
 const db = getFirestore(app);
 
 /* ===================== CONFIG ===================== */
@@ -313,6 +356,11 @@ function setAuthUI() {
     show(loginHint, true);
   }
 
+}
+
+function setHomeAuthState(isLoggedIn) {
+  show($("home-auth-only"), isLoggedIn);
+  show($("loginHint"), !isLoggedIn);
 }
 
 function bindAuthModal() {
