@@ -186,35 +186,41 @@
 </div>
 
 <!-- EDIT BOOK -->
-<div class="edit-book-card">
+<div id="view-edit-book" class="view">
+  <button class="back-btn" onclick="showView('view-library')">← Back</button>
 
-  <img id="edit-cover" class="edit-cover">
+  <div class="edit-book-card">
 
-  <label class="edit-label">Title</label>
-  <input id="edit-title-input" class="auth-input">
+    <img id="edit-cover" class="edit-cover">
 
-  <label class="edit-label">Author</label>
-  <input id="edit-author-input" class="auth-input">
+    <label class="edit-label">Title</label>
+    <input id="edit-title-input" class="auth-input">
 
-  <label class="edit-label">Category</label>
-  <input
-    id="edit-category-input"
-    class="auth-input"
-    list="category-suggestions"
-    placeholder="Type or choose a category">
+    <label class="edit-label">Author</label>
+    <input id="edit-author-input" class="auth-input">
 
-  <datalist id="category-suggestions"></datalist>
+    <label class="edit-label">Category</label>
+    <input
+      id="edit-category-input"
+      class="auth-input"
+      list="category-suggestions"
+      placeholder="Type or choose a category">
 
-  <label class="edit-label">ISBN</label>
-  <input id="edit-isbn" class="auth-input" readonly>
+    <datalist id="category-suggestions"></datalist>
 
-  <button id="saveEditBtn" class="home-primary frosted">Save Changes</button>
+    <label class="edit-label">ISBN</label>
+    <input id="edit-isbn" class="auth-input" readonly>
 
-  <button id="deleteEditBtn" class="danger-outline">
-    Delete Book
-  </button>
+    <button id="saveEditBtn" class="home-primary frosted">Save Changes</button>
 
+    <button id="deleteEditBtn" class="danger-outline">
+      Delete Book
+    </button>
+
+  </div>
 </div>
+
+
 
 
 <!-- READ MODAL -->
