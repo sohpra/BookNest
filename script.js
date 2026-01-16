@@ -54,6 +54,7 @@ let myLibrary = []; // merged: shared + private (with per-user read)
 let scannerActive = false;
 let detectionLocked = false;
 let mediaStream = null;
+let skipNextLibraryReload = false;
 
 let lastCode = null;
 let sameCount = 0;
@@ -384,8 +385,13 @@ window.showView = function (id) {
   }
 
   if (id === "view-library") {
-    if (!librarySyncInFlight) loadLibrary();
+    if (skipNextLibraryReload) {
+      skipNextLibraryReload = false;
+    } else if (!librarySyncInFlight) {
+      loadLibrary();
   }
+}
+
 };
 
 /* ===================== SCANNER ===================== */
@@ -1163,6 +1169,7 @@ $("saveEditBtn").onclick = async () => {
   applyFilters();
 
   // 4️⃣ Go back to library
+  skipNextLibraryReload = true;
   showView("view-library");
 };
 
