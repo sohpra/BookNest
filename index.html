@@ -135,9 +135,23 @@
     </div>
 
 
-    <p id="loginHint" class="home-hint" style="display:none;">
-      Log in to sync your family library.
-    </p>
+    <div id="home-logged-out" style="display:none;">
+      <p class="home-hint">
+        Log in or create an account to continue.
+      </p>
+
+      <button
+        class="home-primary frosted"
+        onclick="document.getElementById('openAuthBtn').click()"
+      >
+        Log in or Sign up
+      </button>
+
+      <p class="home-micro">
+        It only takes a few seconds.
+      </p>
+    </div>
+
 
   </div>
 </div>

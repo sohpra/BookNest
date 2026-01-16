@@ -333,7 +333,7 @@ function setAuthUI() {
   const status = $("authStatus");
   const logoutBtn = $("logoutBtn");
   const openAuthBtn = $("openAuthBtn");
-  const loginHint = $("loginHint");
+  //const loginHint = $("loginHint");
 
   if (!status || !openAuthBtn || !logoutBtn) return;
 
@@ -341,22 +341,23 @@ function setAuthUI() {
     status.textContent = `Logged in as ${currentUser.email}`;
     show(logoutBtn, true);
     show(openAuthBtn, false); // hide login button entirely
-    show(loginHint, false);
+    //show(loginHint, false);
   } 
   else {
     status.textContent = "Not logged in";
     show(logoutBtn, false);
     show(openAuthBtn, true);
     openAuthBtn.textContent = "Log in";
-    show(loginHint, true);
+    //show(loginHint, true);
   }
 
 }
 
 function setHomeAuthState(isLoggedIn) {
   show($("home-auth-only"), isLoggedIn);
-  show($("loginHint"), !isLoggedIn);
+  show($("home-logged-out"), !isLoggedIn);
 }
+
 
 function bindAuthModal() {
   const modal = $("auth-modal");

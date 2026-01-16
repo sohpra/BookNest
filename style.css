@@ -94,6 +94,27 @@ body{
   margin:6px 0 28px;
 }
 
+.home-logged-out,
+#home-logged-out {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.home-hint {
+  font-size: 17px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.home-micro {
+  font-size: 14px;
+  color: rgba(245,246,255,0.6);
+  text-align: center;
+}
+
 /* Stats */
 
 .home-stats-card.modern{
