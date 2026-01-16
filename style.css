@@ -381,50 +381,41 @@ html, body{
 
 /* ===== Auth action row ===== */
 
-.auth-actions{
-  display:grid;
-  grid-template-columns:1.2fr .8fr;
-  gap:14px;
-  margin-top:22px;
+/* === AUTH ACTION BUTTONS (CLEAN) === */
+
+.auth-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 24px;
 }
 
-.auth-primary.big{
-  height:60px;
-  font-size:17px;
-  border-radius:22px;
+.auth-actions button {
+  flex: 1;
+  height: 60px;
+  border-radius: 22px;
+  font-size: 17px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.auth-secondary{
-  height:60px;
-  border-radius:22px;
-  background:rgba(255,255,255,.08);
-  border:1px solid var(--border);
-  color:var(--text);
-  font-weight:700;
+/* Primary (Log in) */
+.auth-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  border: none;
 }
 
-.auth-actions{
-  align-items:stretch;
+/* Secondary (Sign up) */
+.auth-secondary {
+  background: rgba(255,255,255,.08);
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
 }
 
-.auth-secondary{
-  height:60px;   /* force same height as login */
-}
-.auth-secondary{
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
-}
-.auth-actions{
-  display:flex !important;
-  gap:14px;
-}
 
-.auth-actions button{
-  flex:1;
-  height:60px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
 /* ===== Library polish ===== */
 
 .book-item{
