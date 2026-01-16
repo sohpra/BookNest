@@ -464,3 +464,77 @@ body{
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ===================== LIBRARY CONTROLS (GLASS – FORCE) ===================== */
+
+.library-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.glass-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.glass-input input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+  width: 100%;
+}
+
+.glass-input input::placeholder {
+  color: rgba(255,255,255,0.55);
+}
+
+.glass-row {
+  display: flex;
+  gap: 12px;
+}
+
+.glass-select {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 15px;
+}
+
+.glass-select option {
+  background: #0f172a;
+  color: #fff;
+}
+
+.sync-ghost {
+  align-self: center;
+  margin-top: 6px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+}
+
+.back-btn {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+}
