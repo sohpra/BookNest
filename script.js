@@ -52,9 +52,8 @@ onAuthStateChanged(auth, async (user) => {
     show($("logoutBtn"), true);
     show($("openAuthBtn"), false);
 
-    setHomeAuthState(true); // ✅ NEW
+    setHomeAuthState(true);
 
-    // Ensure family + load data
     await ensureFamilyVault();
     await loadLibrary();
 
@@ -73,11 +72,12 @@ onAuthStateChanged(auth, async (user) => {
     renderLibrary([]);
     updateHomeStats();
 
-    setHomeAuthState(false); // ✅ NEW
+    setHomeAuthState(false);
 
-    showView("view-home");
+    showView("view-logged-out");
   }
 });
+
 
 
 
@@ -1282,7 +1282,7 @@ window.onload = () => {
   applyFilters();
 
   // start on home
-  showView("view-home");
+  //showView("view-home");
 
   
 
