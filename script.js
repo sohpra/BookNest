@@ -806,20 +806,18 @@ window.openEditBook = function (bookId) {
 
   editingBookId = bookId;
 
-  const cover = document.getElementById("edit-cover");
-  const titleInput = document.getElementById("edit-title-input");
-  const authorInput = document.getElementById("edit-author-input");
-  const categoryInput = document.getElementById("edit-category");
-  const isbnInput = document.getElementById("edit-isbn");
+  const ids = [
+    "edit-cover",
+    "edit-title-input",
+    "edit-author-input",
+    "edit-category",
+    "edit-isbn"
+  ];
 
-  if (cover) cover.src = book.image || "";
-  if (titleInput) titleInput.value = book.title || "";
-  if (authorInput) authorInput.value = book.author || "";
-  if (categoryInput) categoryInput.value = book.category || "";
-  if (isbnInput) isbnInput.value = book.isbn || "";
-
-  // Setup smart suggestions (must happen AFTER value is set)
-  setupCategorySuggestions(book.category || "");
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    console.log(id, el);
+  });
 
   showView("view-edit-book");
 };
