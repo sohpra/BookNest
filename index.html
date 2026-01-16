@@ -83,56 +83,57 @@
 <div id="view-home" class="view active">
   <div class="home-shell">
 
+    <!-- HEADER -->
     <header class="home-header editorial compact-when-auth">
       <img src="./BookNest_Hero.png" class="home-logo">
       <h1>BookNest</h1>
       <p>Your family’s shared reading library</p>
     </header>
 
+    <!-- LOGGED IN CONTENT -->
     <div id="home-auth-only">
 
-  <!-- OVERVIEW CARD -->
-  <div class="home-overview-card">
+      <!-- OVERVIEW CARD -->
+      <div class="home-overview-card">
 
-    <div class="overview-row">
-      <span class="overview-label">Family members</span>
-      <span class="overview-value" id="stat-members">—</span>
+        <div class="overview-row">
+          <span class="overview-label">Family members</span>
+          <span class="overview-value" id="stat-members">—</span>
+        </div>
+
+        <div class="overview-row">
+          <span class="overview-label">Total books</span>
+          <span class="overview-value" id="stat-count">0</span>
+        </div>
+
+        <div class="overview-row">
+          <span class="overview-label">Read by you</span>
+          <span class="overview-value" id="stat-read">0</span>
+        </div>
+
+        <button
+          class="home-secondary-full frosted"
+          onclick="copyInviteLink()"
+        >
+          Invite family member
+        </button>
+
+      </div>
+
+      <!-- PRIMARY ACTIONS -->
+      <div class="home-actions-stack">
+        <button onclick="showView('view-scanner')" class="home-primary frosted">
+          Add Book
+        </button>
+
+        <button onclick="showView('view-library')" class="home-secondary-full frosted">
+          View Library
+        </button>
+      </div>
+
     </div>
 
-    <div class="overview-row">
-      <span class="overview-label">Total books</span>
-      <span class="overview-value" id="stat-count">0</span>
-    </div>
-
-    <div class="overview-row">
-      <span class="overview-label">Read by you</span>
-      <span class="overview-value" id="stat-read">0</span>
-    </div>
-
-    <button
-      class="home-secondary-full frosted"
-      onclick="copyInviteLink()"
-    >
-      Invite family member
-    </button>
-
-  </div>
-
-  <!-- PRIMARY ACTIONS (STACKED) -->
-  <div class="home-actions-stack">
-    <button onclick="showView('view-scanner')" class="home-primary frosted">
-      Add Book
-    </button>
-
-    <button onclick="showView('view-library')" class="home-secondary-full frosted">
-      View Library
-    </button>
-  </div>
-
-</div>
-
-
-
+    <!-- LOGGED OUT CONTENT -->
     <div id="home-logged-out" style="display:none;">
       <p class="home-hint">
         Log in or create an account to continue.
@@ -142,7 +143,7 @@
         class="home-primary frosted"
         onclick="document.getElementById('openAuthBtn').click()"
       >
-        Log in / Sign up
+        Log in or Sign up
       </button>
 
       <p class="home-micro">
@@ -150,9 +151,9 @@
       </p>
     </div>
 
-
   </div>
 </div>
+
 
 
 
