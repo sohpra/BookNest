@@ -616,3 +616,58 @@ body{
   flex-direction: column;
   gap: 14px;
 }
+/* ===============================
+   HOME SCREEN – COMPACT (AUTH)
+   =============================== */
+
+/* Collapse hero when logged in */
+body.authenticated .home-header {
+  margin-bottom: 12px;
+}
+
+body.authenticated .home-header h1 {
+  display: none;
+}
+
+body.authenticated .home-header .home-logo {
+  width: 64px;
+  margin-bottom: 6px;
+}
+
+body.authenticated .home-header p {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+/* Stats card – tighter vertical rhythm */
+.home-stats-card {
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.home-stats-card .stat-pill,
+.home-stats-card .stat-row {
+  padding: 10px 0;
+}
+
+/* Buttons – slightly shorter but same feel */
+.home-primary,
+.home-secondary-full {
+  padding: 14px 18px;
+  font-size: 1rem;
+}
+
+.home-primary + .home-primary,
+.home-secondary-full {
+  margin-top: 12px;
+}
+.home-primary,
+.home-secondary-full {
+  padding: 14px 18px; /* was ~18–20 */
+  font-size: 1rem;
+}
+
+.home-primary + .home-primary,
+.home-secondary-full {
+  margin-top: 12px; /* reduce vertical stacking gap */
+}
