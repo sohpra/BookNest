@@ -61,6 +61,8 @@ onAuthStateChanged(auth, async (user) => {
     await updateFamilyMemberCount(); // ← ADD THIS LINE
 
     setHomeAuthState(true);   // ✅ only toggles inner sections
+    showView("view-home");
+
   } else {
     // ─── LOGGED OUT ───
     currentUser = null;
@@ -75,6 +77,8 @@ onAuthStateChanged(auth, async (user) => {
     updateHomeStats();
 
     setHomeAuthState(false);  // ✅ only toggles inner sections
+    showView("view-home");
+
   }
 });
 
@@ -433,10 +437,17 @@ function bindAuthModal() {
 /* ===================== NAVIGATION ===================== */
 window.showView = function (id) {
   const views = document.querySelectorAll(".view");
-  for (const v of views) v.style.display = "none";
+
+  for (const v of views) {
+    v.style.display = "none";       // hard reset
+    v.classList.remove("active");
+  }
 
   const target = document.getElementById(id);
-  if (target) target.style.display = "block";
+  if (target) {
+    target.style.display = "block"; // explicit
+    target.classList.add("active");
+  }
 
   if (id === "view-scanner") {
     setTimeout(startScanner, 200);
@@ -445,14 +456,10 @@ window.showView = function (id) {
   }
 
   if (id === "view-library") {
-    if (skipNextLibraryReload) {
-      skipNextLibraryReload = false;
-    } else if (!librarySyncInFlight) {
-      loadLibrary();
+    if (!librarySyncInFlight) loadLibrary();
   }
-}
-
 };
+
 
 /* ===================== SCANNER ===================== */
 async function loadQuagga() {
