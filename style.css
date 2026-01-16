@@ -334,3 +334,65 @@ body{
   padding:14px;
   font-weight:700;
 }
+/* ===== Book status / flags (PILLS) ===== */
+
+.book-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+/* Base pill */
+.chip{
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:11px;
+  letter-spacing:.12em;
+  font-weight:700;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.16);
+  color:var(--muted);
+  display:inline-flex;
+  align-items:center;
+  white-space:nowrap;
+}
+
+/* READ / UNREAD */
+.chip.read{
+  background:rgba(0,210,120,.18);
+  color:#38ef9d;
+  border-color:rgba(0,210,120,.35);
+}
+
+.chip.unread{
+  background:rgba(255,255,255,.06);
+  color:var(--muted);
+}
+
+/* SHARED / PRIVATE */
+.chip.shared{
+  background:rgba(108,92,231,.18);
+  color:#a9a0ff;
+  border-color:rgba(108,92,231,.35);
+}
+
+.chip.private{
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.6);
+}
+
+/* FORMAT — neutral (same family as shared/private) */
+.chip.print,
+.chip.ebook{
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.7);
+  border-color:rgba(255,255,255,.18);
+}
+
+/* EDIT stays text-only */
+.chip.edit{
+  background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.6);
+  border:1px dashed rgba(255,255,255,.25);
+}
