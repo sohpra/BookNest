@@ -1275,18 +1275,14 @@ window.onload = () => {
   bindAuthModal();
   bindLibraryControls();
 
-
-  // render instantly (offline fallback)
   myLibrary = loadLocalFallback();
   populateCategoryFilter();
   applyFilters();
 
-  // start on home
-  //showView("view-home");
-
-  
-
+  // ✅ SAFETY FALLBACK (pre-auth)
+  showView("view-logged-out");
 };
+
 
 window.db = db;
 window.doc = doc;
