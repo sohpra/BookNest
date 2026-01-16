@@ -837,7 +837,10 @@ let editingBookId = null;
 
 window.openEditBook = function (bookId) {
   const book = myLibrary.find(b => b.bookId === bookId);
-  if (!book) return;
+  if (!book) {
+    console.error("Book not found", bookId);
+    return;
+  }
 
   editingBookId = bookId;
 
@@ -847,12 +850,15 @@ window.openEditBook = function (bookId) {
   const category = document.getElementById("edit-category");
   const isbn = document.getElementById("edit-isbn");
 
-  if (!title || !author || !category || !isbn) {
+  // 🔍 Debug safety (leave this in for now)
+  console.log({ cover, title, author, category, isbn });
+
+  if (!cover || !title || !author || !category || !isbn) {
     console.error("Edit view missing elements");
     return;
   }
 
-  if (cover) cover.src = book.image || "";
+  cover.src = book.image || "";
   title.value = book.title || "";
   author.value = book.author || "";
   category.value = book.category || "";
@@ -862,6 +868,7 @@ window.openEditBook = function (bookId) {
 
   showView("view-edit-book");
 };
+
 
 
 
