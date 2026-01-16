@@ -171,11 +171,17 @@ async function ensureFamilyVault() {
     const idx = await getDoc(userIndexRef(currentUser.uid));
     if (idx.exists() && idx.data()?.familyId) {
       familyId = idx.data().familyId;
+
+      // OPTIONAL UX
+      if (getJoinFamilyId()) {
+        showToast("You’re already part of a family", "#6c757d");
+        history.replaceState({}, "", location.pathname);
+      }
+
       return familyId;
     }
-  } catch {
-    // ignore, we'll try to bootstrap below
-  }
+  } catch {}
+
 
   // 2) Join an existing family (invite link flow)
 
