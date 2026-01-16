@@ -5,7 +5,7 @@
    - Private shelf per user
    - Per-user read stored in userData subcollection
    - Auto-creates a family vault on first login ("Our BookNest")
-   - Adds: join existing family via ?family=FAMILY_ID (optional, for invites)
+   - Adds: join existing family via ?join=FAMILY_ID (optional, for invites)
 */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -108,14 +108,16 @@ function show(el, yes) {
 }
 
 function getJoinFamilyId() {
-  const p = new URLSearchParams(location.search);
-  return p.get("join");
+  const p = new URLSearchParams(window.location.search);
+  const id = (p.get("join") || "").trim();
+  return id || null;
 }
 
 
+
 /* ===================== URL PARAMS (optional invites) ===================== */
-const params = new URLSearchParams(location.search);
-const JOIN_FAMILY_ID = (params.get("join") || "").trim(); // e.g. ?join=abc123
+//const params = new URLSearchParams(location.search);
+//const JOIN_FAMILY_ID = (params.get("join") || "").trim(); // e.g. ?join=abc123
 
 /* ===================== FAMILY DATA PATHS ===================== */
 // Index from user -> family
@@ -176,8 +178,11 @@ async function ensureFamilyVault() {
   }
 
   // 2) Join an existing family (invite link flow)
-  if (JOIN_FAMILY_ID) {
-    const fid = JOIN_FAMILY_ID;
+
+  const joinId = getJoinFamilyId();
+  if (joinId) {
+    const fid = joinId;
+
 
     // Does family exist?
     const famSnap = await getDoc(familyRef(fid));
@@ -206,6 +211,7 @@ async function ensureFamilyVault() {
       );
 
       familyId = fid;
+      history.replaceState({}, "", location.pathname);
       return familyId;
     }
   }
