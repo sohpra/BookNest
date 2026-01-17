@@ -648,7 +648,8 @@ async function onDetected(result) {
   if (detectionLocked) return;
   detectionLocked = true;
 
-  stopScanner();
+  // 🔴 IMPORTANT: hide scanner layer immediately
+  closeScanner();   // ← THIS IS THE KEY LINE
 
   try {
     if (navigator.vibrate) navigator.vibrate(80);
@@ -657,6 +658,7 @@ async function onDetected(result) {
   const raw = result && result.codeResult ? result.codeResult.code : "";
   handleISBN(raw);
 }
+
 
 /* ===================== BOOK LOOKUPS ===================== */
 function normalizeIsbn(raw) {

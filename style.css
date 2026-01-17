@@ -912,3 +912,7 @@ body.authenticated .home-header p {
 }
 
 #startScanBtn { display: none; }
+
+.modal-overlay {
+  z-index: 20000;
+}
