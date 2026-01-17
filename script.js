@@ -520,40 +520,52 @@ window.startScanner = async function startScanner() {
   document.body.style.right = "0";
 
   Quagga.init(
-    {
-      inputStream: {
-        type: "LiveStream",
-        target: box,
-        constraints: {
-          facingMode: "environment",
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        area: { top: "25%", right: "10%", left: "10%", bottom: "25%" },
+  {
+    inputStream: {
+      type: "LiveStream",
+      target: box,
+      constraints: {
+        facingMode: { ideal: "environment" },
+        aspectRatio: { ideal: 16 / 9 }
       },
-      decoder: { readers: ["ean_reader"], multiple: false },
-      locate: true,
-      locator: { patchSize: "large", halfSample: false },
-      numOfWorkers: navigator.hardwareConcurrency || 4,
-      frequency: 10,
+      area: {
+        top: "25%",
+        right: "10%",
+        left: "10%",
+        bottom: "25%"
+      }
     },
-    (err) => {
-      if (err) {
-        console.error("Quagga init error:", err);
-        showToast("Scanner failed to start", "#dc3545");
-        scannerActive = false;
-        return;
-      }
-      Quagga.start();
-
-      const v = box ? box.querySelector("video") : null;
-      if (v) {
-        v.setAttribute("playsinline", "true");
-        v.setAttribute("webkit-playsinline", "true");
-        v.play().catch(() => {});
-      }
+    decoder: {
+      readers: ["ean_reader"],
+      multiple: false
+    },
+    locate: true,
+    locator: {
+      patchSize: "medium",
+      halfSample: true
+    },
+    numOfWorkers: navigator.hardwareConcurrency || 4,
+    frequency: 8
+  },
+  (err) => {
+    if (err) {
+      console.error("Quagga init error:", err);
+      showToast("Scanner failed to start", "#dc3545");
+      scannerActive = false;
+      return;
     }
-  );
+
+    Quagga.start();
+
+    const v = box ? box.querySelector("video") : null;
+    if (v) {
+      v.setAttribute("playsinline", "true");
+      v.setAttribute("webkit-playsinline", "true");
+      v.play().catch(() => {});
+    }
+  }
+);
+
 
   if (Quagga.offDetected) Quagga.offDetected(onDetectedRaw);
   Quagga.onDetected(onDetectedRaw);

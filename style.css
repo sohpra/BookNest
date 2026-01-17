@@ -845,3 +845,45 @@ body.authenticated .home-header p {
 .home-secondary-full {
   margin-bottom: 0 !important;
 }
+
+/* ===============================
+   SCANNER – FULLSCREEN FIX (SAFE)
+   =============================== */
+
+.scanner-view,
+#scanner,
+#scanner-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  width: 100vw;
+  height: 100dvh;
+
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  background: black;
+  overflow: hidden;
+}
+
+/* Camera video – DO NOT CROP */
+.scanner-view video,
+#scanner video,
+#scanner-container video {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain !important; /* KEY FIX */
+  transform: none !important;
+}
+
+/* iOS Safari fix */
+@supports (-webkit-touch-callout: none) {
+  .scanner-view,
+  #scanner,
+  #scanner-container {
+    height: 100vh;
+  }
+}
