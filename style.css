@@ -910,3 +910,5 @@ body.authenticated .home-header p {
   left:12px;
   z-index:2;
 }
+
+#startScanBtn { display: none; }

@@ -461,20 +461,28 @@ window.showView = function (id) {
 };
 
 function openScanner() {
-  // show fullscreen scanner layer
-  document.getElementById("scanner-layer").hidden = false;
+  const layer = document.getElementById("scanner-layer");
+  if (!layer) return;
 
-  // optional: hide auth bar while scanning (uncomment if you want)
-  // document.querySelector(".auth-bar").style.display = "none";
+  layer.hidden = false;
 
+  // Start camera immediately
   startScanner();
 }
 
+
 function closeScanner() {
-  try { Quagga.stop(); } catch(e) {}
+  try {
+    if (window.Quagga) Quagga.stop();
+  } catch (e) {}
+
   scannerActive = false;
-  document.getElementById("scanner-layer").hidden = true;
+  detectionLocked = false;
+
+  const layer = document.getElementById("scanner-layer");
+  if (layer) layer.hidden = true;
 }
+
 
 
 
@@ -1314,7 +1322,7 @@ window.onload = () => {
   applyFilters();
 
   // ✅ SAFETY FALLBACK (pre-auth)
-  showView("view-logged-out");
+  // showView("view-logged-out");
 };
 
 
