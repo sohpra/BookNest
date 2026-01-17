@@ -887,7 +887,7 @@ body.authenticated .home-header p {
 #scanner-box canvas{
   width:100% !important;
   height:100% !important;
-  object-fit:contain !important;  /* avoid zoom/crop */
+  object-fit:cover !important;  /* avoid zoom/crop */
 }
 
 /* Controls overlay at bottom */

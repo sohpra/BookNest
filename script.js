@@ -522,33 +522,49 @@ window.startScanner = async function startScanner() {
 
   await loadQuagga();
 
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+      },
+      audio: false,
+    });
+  } catch {
+    alert("Camera permission denied.");
+    scannerActive = false;
+    return;
+  }
+
   Quagga.init(
     {
       inputStream: {
         type: "LiveStream",
         target: box,
         constraints: {
-          facingMode: { ideal: "environment" },
-          aspectRatio: { ideal: 16 / 9 }
+          facingMode: "environment",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
         area: {
           top: "25%",
           right: "10%",
           left: "10%",
-          bottom: "25%"
-        }
+          bottom: "25%",
+        },
       },
       decoder: {
         readers: ["ean_reader"],
-        multiple: false
+        multiple: false,
       },
       locate: true,
       locator: {
-        patchSize: "medium",
-        halfSample: true
+        patchSize: "large",
+        halfSample: false,
       },
       numOfWorkers: navigator.hardwareConcurrency || 4,
-      frequency: 8
+      frequency: 10,
     },
     (err) => {
       if (err) {
@@ -560,20 +576,18 @@ window.startScanner = async function startScanner() {
 
       Quagga.start();
 
-      // 🔗 detection handler (safe rebind)
-      if (Quagga.offDetected) Quagga.offDetected(onDetectedRaw);
-      Quagga.onDetected(onDetectedRaw);
-
-      // iOS inline video fix
       const v = box.querySelector("video");
       if (v) {
         v.setAttribute("playsinline", "true");
         v.setAttribute("webkit-playsinline", "true");
         v.play().catch(() => {});
       }
-
     }
   );
+
+  // ✅ bind ONCE, outside init callback
+  if (Quagga.offDetected) Quagga.offDetected(onDetectedRaw);
+  Quagga.onDetected(onDetectedRaw);
 };
 
 
@@ -626,6 +640,8 @@ function onDetectedRaw(result) {
     lastAcceptTs = now;
     onDetected(result);
   }
+  console.log("Detected:", result.codeResult.code);
+
 }
 
 async function onDetected(result) {
