@@ -460,15 +460,14 @@ window.showView = function (id) {
   }
 };
 
-function openScanner() {
+window.openScanner = function openScanner() {
   const layer = document.getElementById("scanner-layer");
   if (!layer) return;
 
   layer.hidden = false;
-
-  // Start camera immediately
   startScanner();
-}
+};
+
 
 
 function closeScanner() {
