@@ -927,3 +927,22 @@ body.authenticated .home-header p {
     flex-basis: 100%;
   }
 }
+/* ===================== TOAST ===================== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 88px;                 /* above iOS Safari bar */
+  transform: translateX(-50%);
+
+  z-index: 9999;
+  padding: 12px 18px;
+  border-radius: 14px;
+
+  font-size: 0.95rem;
+  color: #fff;
+  background: #28a745;          /* fallback */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+
+  max-width: calc(100vw - 32px);
+  text-align: center;
+}
