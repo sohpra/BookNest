@@ -501,7 +501,9 @@ body{
 .glass-row {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;   /* ✅ allow wrapping */
 }
+
 
 .glass-select {
   flex: 1;
@@ -915,4 +917,13 @@ body.authenticated .home-header p {
 
 .modal-overlay {
   z-index: 20000;
+}
+@media (max-width: 480px) {
+  .glass-row .glass-select {
+    flex: 1 1 calc(50% - 6px);
+  }
+
+  .glass-row .glass-select:last-child {
+    flex-basis: 100%;
+  }
 }
