@@ -122,9 +122,10 @@
 
       <!-- PRIMARY ACTIONS -->
       <div class="home-actions-stack">
-        <button onclick="showView('view-scanner')" class="home-primary frosted">
+        <button onclick="openScanner()" class="home-primary frosted">
           Add Book
         </button>
+
 
         <button onclick="showView('view-library')" class="home-secondary-full frosted">
           View Library
@@ -157,23 +158,19 @@
 
 
 
-<!-- SCANNER -->
-<div id="view-scanner" class="view">
-  <button class="back-btn" onclick="showView('view-home')">← Back</button>
-  <div id="interactive" class="viewport">
-    <div class="scanner-placeholder">
-      <div class="scanner-icon">📷</div>
-      <div>
-        <div class="scanner-title">Scanner placeholder</div>
-        <div class="muted">This build uses manual ISBN entry by default.</div>
-      </div>
-    </div>
-  </div>
+<!-- SCANNER (FULLSCREEN LAYER, NOT A .view) -->
+<div id="scanner-layer" hidden>
+  <button class="back-btn" id="scannerBackBtn">← Back</button>
+
+  <!-- Quagga will inject the video + canvas into this -->
+  <div id="scanner-box"></div>
+
   <div class="controls">
-    <button onclick="startScanner()" class="menu-btn orange-debug">Start Scanner</button>
+    <button id="startScanBtn" class="menu-btn orange-debug">Start Scanner</button>
     <button id="manual-btn" class="menu-btn secondary">Manual ISBN Entry</button>
   </div>
 </div>
+
 
 <!-- LIBRARY -->
 <div id="view-library" class="view">

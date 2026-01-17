@@ -460,6 +460,23 @@ window.showView = function (id) {
   }
 };
 
+function openScanner() {
+  // show fullscreen scanner layer
+  document.getElementById("scanner-layer").hidden = false;
+
+  // optional: hide auth bar while scanning (uncomment if you want)
+  // document.querySelector(".auth-bar").style.display = "none";
+
+  startScanner();
+}
+
+function closeScanner() {
+  try { Quagga.stop(); } catch(e) {}
+  scannerActive = false;
+  document.getElementById("scanner-layer").hidden = true;
+}
+
+
 
 /* ===================== SCANNER ===================== */
 async function loadQuagga() {
@@ -493,83 +510,67 @@ window.startScanner = async function startScanner() {
   detectionLocked = false;
   resetDetectionStability();
 
-  const box = document.getElementById("interactive");
+  const box = document.getElementById("scanner-box");
   if (box) box.innerHTML = "";
 
   await loadQuagga();
 
-  try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-      },
-      audio: false,
-    });
-  } catch {
-    alert("Camera permission denied.");
-    scannerActive = false;
-    return;
-  }
-
-  // iOS/WebKit fix: lock body layout while camera runs
-  document.body.style.position = "fixed";
-  document.body.style.top = "0";
-  document.body.style.left = "0";
-  document.body.style.right = "0";
-
   Quagga.init(
-  {
-    inputStream: {
-      type: "LiveStream",
-      target: box,
-      constraints: {
-        facingMode: { ideal: "environment" },
-        aspectRatio: { ideal: 16 / 9 }
+    {
+      inputStream: {
+        type: "LiveStream",
+        target: box,
+        constraints: {
+          facingMode: { ideal: "environment" },
+          aspectRatio: { ideal: 16 / 9 }
+        },
+        area: {
+          top: "25%",
+          right: "10%",
+          left: "10%",
+          bottom: "25%"
+        }
       },
-      area: {
-        top: "25%",
-        right: "10%",
-        left: "10%",
-        bottom: "25%"
+      decoder: {
+        readers: ["ean_reader"],
+        multiple: false
+      },
+      locate: true,
+      locator: {
+        patchSize: "medium",
+        halfSample: true
+      },
+      numOfWorkers: navigator.hardwareConcurrency || 4,
+      frequency: 8
+    },
+    (err) => {
+      if (err) {
+        console.error("Quagga init error:", err);
+        showToast("Scanner failed to start", "#dc3545");
+        scannerActive = false;
+        return;
       }
-    },
-    decoder: {
-      readers: ["ean_reader"],
-      multiple: false
-    },
-    locate: true,
-    locator: {
-      patchSize: "medium",
-      halfSample: true
-    },
-    numOfWorkers: navigator.hardwareConcurrency || 4,
-    frequency: 8
-  },
-  (err) => {
-    if (err) {
-      console.error("Quagga init error:", err);
-      showToast("Scanner failed to start", "#dc3545");
-      scannerActive = false;
-      return;
+
+      Quagga.start();
+
+      // 🔗 detection handler (safe rebind)
+      if (Quagga.offDetected) Quagga.offDetected(onDetectedRaw);
+      Quagga.onDetected(onDetectedRaw);
+
+      // iOS inline video fix
+      const v = box.querySelector("video");
+      if (v) {
+        v.setAttribute("playsinline", "true");
+        v.setAttribute("webkit-playsinline", "true");
+        v.play().catch(() => {});
+      }
+
     }
-
-    Quagga.start();
-
-    const v = box ? box.querySelector("video") : null;
-    if (v) {
-      v.setAttribute("playsinline", "true");
-      v.setAttribute("webkit-playsinline", "true");
-      v.play().catch(() => {});
-    }
-  }
-);
-
-
-  if (Quagga.offDetected) Quagga.offDetected(onDetectedRaw);
-  Quagga.onDetected(onDetectedRaw);
+  );
 };
+
+
+
 
 function stopScanner() {
   scannerActive = false;
@@ -593,8 +594,9 @@ function stopScanner() {
     mediaStream = null;
   }
 
-  const el = document.getElementById("interactive");
+  const el = document.getElementById("scanner-box");
   if (el) el.innerHTML = "";
+
 }
 
 function onDetectedRaw(result) {
@@ -1320,3 +1322,12 @@ window.db = db;
 window.doc = doc;
 window.setDoc = setDoc;
 window.serverTimestamp = serverTimestamp;
+
+document
+  .getElementById("scannerBackBtn")
+  .addEventListener("click", closeScanner);
+
+  document
+  .getElementById("startScanBtn")
+  .addEventListener("click", startScanner);
+
